@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const taskController = require('../controllers/taskController');
-const auth = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 
-router.use(auth);
+router.use(requireAuth);
 
 // Use correct exported function names from taskController.js
 router.get('/', taskController.getTasks);

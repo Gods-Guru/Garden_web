@@ -1,9 +1,10 @@
-import { Garden, User, Plot } from '../models/index.js';
-import { catchAsync } from '../middleware/errorHandler.js';
-import { AppError } from '../middleware/errorHandler.js';
+const Garden = require('../models/Garden');
+const User = require('../models/User');
+const Plot = require('../models/Plot');
+const { catchAsync, AppError } = require('../middleware/errorHandler');
 
 // Get all public gardens (with pagination and search)
-export const getAllGardens = catchAsync(async (req, res, next) => {
+const getAllGardens = catchAsync(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
@@ -54,7 +55,7 @@ export const getAllGardens = catchAsync(async (req, res, next) => {
 });
 
 // Get user's gardens
-export const getMyGardens = catchAsync(async (req, res, next) => {
+const getMyGardens = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id).populate({
     path: 'gardens.gardenId',
     select: 'name description address status stats images'
@@ -76,7 +77,7 @@ export const getMyGardens = catchAsync(async (req, res, next) => {
 });
 
 // Get single garden details
-export const getGarden = catchAsync(async (req, res, next) => {
+const getGarden = catchAsync(async (req, res, next) => {
   const { gardenId } = req.params;
 
   const garden = await Garden.findById(gardenId).populate('owner', 'name email avatar');
@@ -111,7 +112,7 @@ export const getGarden = catchAsync(async (req, res, next) => {
 });
 
 // Create new garden
-export const createGarden = catchAsync(async (req, res, next) => {
+const createGarden = catchAsync(async (req, res, next) => {
   const gardenData = {
     ...req.body,
     owner: req.user._id
@@ -140,7 +141,7 @@ export const createGarden = catchAsync(async (req, res, next) => {
 });
 
 // Update garden
-export const updateGarden = catchAsync(async (req, res, next) => {
+const updateGarden = catchAsync(async (req, res, next) => {
   const { gardenId } = req.params;
 
   const garden = await Garden.findByIdAndUpdate(
@@ -163,7 +164,7 @@ export const updateGarden = catchAsync(async (req, res, next) => {
 });
 
 // Delete garden
-export const deleteGarden = catchAsync(async (req, res, next) => {
+const deleteGarden = catchAsync(async (req, res, next) => {
   const { gardenId } = req.params;
 
   const garden = await Garden.findById(gardenId);
@@ -197,7 +198,7 @@ export const deleteGarden = catchAsync(async (req, res, next) => {
 });
 
 // Join garden (request membership)
-export const joinGarden = catchAsync(async (req, res, next) => {
+const joinGarden = catchAsync(async (req, res, next) => {
   const { gardenId } = req.params;
 
   const garden = await Garden.findById(gardenId);
@@ -257,7 +258,7 @@ export const joinGarden = catchAsync(async (req, res, next) => {
 });
 
 // Leave garden
-export const leaveGarden = catchAsync(async (req, res, next) => {
+const leaveGarden = catchAsync(async (req, res, next) => {
   const { gardenId } = req.params;
 
   const garden = await Garden.findById(gardenId);
@@ -288,7 +289,7 @@ export const leaveGarden = catchAsync(async (req, res, next) => {
 });
 
 // Get garden members
-export const getGardenMembers = catchAsync(async (req, res, next) => {
+const getGardenMembers = catchAsync(async (req, res, next) => {
   const { gardenId } = req.params;
 
   const members = await User.find({
@@ -314,7 +315,7 @@ export const getGardenMembers = catchAsync(async (req, res, next) => {
 });
 
 // Update member role
-export const updateMemberRole = catchAsync(async (req, res, next) => {
+const updateMemberRole = catchAsync(async (req, res, next) => {
   const { gardenId, userId } = req.params;
   const { role } = req.body;
 
@@ -334,7 +335,7 @@ export const updateMemberRole = catchAsync(async (req, res, next) => {
 });
 
 // Approve/reject membership
-export const manageMembership = catchAsync(async (req, res, next) => {
+const manageMembership = catchAsync(async (req, res, next) => {
   const { gardenId, userId } = req.params;
   const { action } = req.body; // 'approve' or 'reject'
 
@@ -371,7 +372,7 @@ export const manageMembership = catchAsync(async (req, res, next) => {
 });
 
 // Get garden statistics
-export const getGardenStats = catchAsync(async (req, res, next) => {
+const getGardenStats = catchAsync(async (req, res, next) => {
   const { gardenId } = req.params;
 
   const garden = await Garden.findById(gardenId);
@@ -408,7 +409,7 @@ export const getGardenStats = catchAsync(async (req, res, next) => {
 });
 
 // Find gardens near a location
-export const getNearbyGardens = catchAsync(async (req, res, next) => {
+const getNearbyGardens = catchAsync(async (req, res, next) => {
   const { lng, lat, radius = 5 } = req.query; // radius in km
   if (!lng || !lat) {
     return next(new AppError('Longitude and latitude are required', 400, 'GEO_REQUIRED'));
@@ -424,3 +425,19 @@ export const getNearbyGardens = catchAsync(async (req, res, next) => {
   }).select('name description geo address stats');
   res.json({ success: true, data: gardens });
 });
+
+module.exports = {
+  getAllGardens,
+  getMyGardens,
+  getGarden,
+  createGarden,
+  updateGarden,
+  deleteGarden,
+  joinGarden,
+  leaveGarden,
+  getGardenMembers,
+  updateMemberRole,
+  manageMembership,
+  getGardenStats,
+  getNearbyGardens
+};

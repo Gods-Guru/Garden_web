@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const gardenController = require('../controllers/gardenController');
-const auth = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 
 // Public: Get all gardens (with search/pagination)
 router.get('/', gardenController.getAllGardens);
@@ -10,7 +10,7 @@ router.get('/', gardenController.getAllGardens);
 router.get('/nearby', gardenController.getNearbyGardens);
 
 // Authenticated routes
-router.use(auth);
+router.use(requireAuth);
 
 router.get('/my', gardenController.getMyGardens);
 router.get('/:gardenId', gardenController.getGarden);
