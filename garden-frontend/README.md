@@ -1,31 +1,12 @@
-# Garden Manager Frontend
+# React + Vite
 
-A beautiful, modern, and fully functional React frontend for your garden management backend.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Features
-- Authentication (login/register)
-- Dashboard overview
-- Gardens: list, join/leave, manage, members, stats
-- Plots: list, manage
-- Tasks: list, assign, complete, feedback
-- Water Logs: list, analytics, leaderboard
-- Responsive, green-themed UI (Material UI + Tailwind)
-- React Router, Axios for API calls
+Currently, two official plugins are available:
 
-## Getting Started
-1. Install dependencies:
-   ```sh
-   npm install
-   ```
-2. Start the development server:
-   ```sh
-   npm run dev
-   ```
-3. The app will be available at [http://localhost:5173](http://localhost:5173)
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## API
-This frontend expects your backend API to be available at `/api/` (e.g., `/api/gardens`, `/api/tasks`, etc.).
+## Expanding the ESLint configuration
 
----
-
-Enjoy your amazing garden management experience! 🌱
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.

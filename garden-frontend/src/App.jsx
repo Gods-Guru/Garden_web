@@ -1,75 +1,34 @@
-"use client"
+import { useState } from 'react'
+import './App.scss'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { Home } from './pages/Home'
+import { Register } from './pages/Register'
+import { Login } from './pages/Login'
+import { Dashboard } from './pages/Dashboard'
+import { Garden } from './pages/Garden'
+import { Media } from './pages/Media'
+import Community from './pages/Community'
+import { Payments } from './pages/Payments'
+import { Settings } from './pages/Settings'
+import { NotFound } from './pages/NotFound'
+import Footer from './components/common/Footer'
 
-import { useState, useEffect } from "react"
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
-import Layout from "./components/Layout/Layout"
-import Dashboard from "./components/Dashboard/Dashboard"
-import GardenOverview from "./components/Gardens/GardenOverview"
-import TaskBoard from "./components/Tasks/TaskBoard"
-import Login from "./components/Auth/Login"
-import "./styles/globals.scss"
-
-function App() {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    // Check for existing authentication
-    const token = localStorage.getItem("token")
-    if (token) {
-      // Simulate user data fetch
-      setTimeout(() => {
-        setUser({
-          id: 1,
-          name: "John Gardener",
-          email: "john@example.com",
-          role: "admin",
-          profilePicture: null,
-        })
-        setLoading(false)
-      }, 1000)
-    } else {
-      setLoading(false)
-    }
-  }, [])
-
-  const handleLogin = (userData) => {
-    setUser(userData)
-    localStorage.setItem("token", "mock-jwt-token")
-  }
-
-  const handleLogout = () => {
-    setUser(null)
-    localStorage.removeItem("token")
-  }
-
-  if (loading) {
-    return (
-      <div className="app-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading GardenHub...</p>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return <Login onLogin={handleLogin} />
-  }
-
+export default function App() {
   return (
     <Router>
-      <Layout user={user}>
-        <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Dashboard user={user} />} />
-          <Route path="/gardens" element={<GardenOverview user={user} />} />
-          <Route path="/tasks" element={<TaskBoard user={user} />} />
-          {/* Add more routes as needed */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </Layout>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/gardens/:id" element={<Garden />} />
+        <Route path="/media" element={<Media />} />
+        <Route path="/community" element={<Community />} />
+        <Route path="/payments" element={<Payments />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="*" element={<NotFound />} />
+        <Route path="/footer" element={<Footer />} />
+      </Routes>
     </Router>
   )
 }
-
-export default App
