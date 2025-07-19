@@ -47,7 +47,11 @@ const gardenSchema = new mongoose.Schema(
         type: [Number], // [longitude, latitude]
         required: true
       }
-    }
+    },
+    area: { type: String },
+    numberOfPlots: { type: Number },
+    rules: { type: String },
+    managers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
   },
   { timestamps: true }
 );

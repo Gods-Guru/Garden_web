@@ -221,10 +221,4 @@ const optionalAuth = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  requireAuth,
-  authorize,
-  requireGardenAdmin,
-  requireGardenCoordinator,
-  optionalAuth
-};
+module.exports = requireAuth;

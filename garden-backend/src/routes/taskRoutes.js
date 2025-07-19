@@ -1,25 +1,28 @@
 const express = require('express');
 const router = express.Router();
 const taskController = require('../controllers/taskController');
-const { requireAuth } = require('../middleware/auth');
+const auth = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const authorize = require('../middleware/authorize');
+const { createTaskSchema, updateTaskSchema } = require('../validation/taskSchemas');
 
-router.use(requireAuth);
+router.use(auth);
 
-// Use correct exported function names from taskController.js
 router.get('/', taskController.getTasks);
 router.get('/:id', taskController.getTask);
-router.post('/', taskController.createTask);
-router.put('/:id', taskController.updateTask);
-router.delete('/:id', taskController.deleteTask);
+// Only admin or manager can create or update a task
+router.post('/', authorize('admin', 'manager'), validate(createTaskSchema), taskController.createTask);
+router.put('/:id', authorize('admin', 'manager'), validate(updateTaskSchema), taskController.updateTask);
+router.delete('/:id', authorize('admin', 'manager'), taskController.deleteTask);
 
 // Advanced, role-aware task routes
 router.get('/my', taskController.getMyTasks);
 router.get('/stats/:gardenId', taskController.getTaskStats);
 router.get('/garden/:gardenId', taskController.getTasks);
 router.get('/garden/:gardenId/:taskId', taskController.getTask);
-router.post('/garden/:gardenId', taskController.createTask);
-router.put('/garden/:gardenId/:taskId', taskController.updateTask);
-router.delete('/garden/:gardenId/:taskId', taskController.deleteTask);
+router.post('/garden/:gardenId', authorize('admin', 'manager'), validate(createTaskSchema), taskController.createTask);
+router.put('/garden/:gardenId/:taskId', authorize('admin', 'manager'), validate(updateTaskSchema), taskController.updateTask);
+router.delete('/garden/:gardenId/:taskId', authorize('admin', 'manager'), taskController.deleteTask);
 router.post('/garden/:gardenId/:taskId/assign', taskController.assignTask);
 router.post('/garden/:gardenId/:taskId/respond', taskController.respondToAssignment);
 router.post('/garden/:gardenId/:taskId/complete', taskController.completeTask);

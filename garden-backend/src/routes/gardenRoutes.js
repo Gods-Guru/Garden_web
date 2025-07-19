@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const gardenController = require('../controllers/gardenController');
-const { requireAuth } = require('../middleware/auth');
+const auth = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const authorize = require('../middleware/authorize');
+const { createGardenSchema, updateGardenSchema } = require('../validation/gardenSchemas');
 
 // Public: Get all gardens (with search/pagination)
 router.get('/', gardenController.getAllGardens);
@@ -10,18 +13,19 @@ router.get('/', gardenController.getAllGardens);
 router.get('/nearby', gardenController.getNearbyGardens);
 
 // Authenticated routes
-router.use(requireAuth);
+router.use(auth);
 
 router.get('/my', gardenController.getMyGardens);
 router.get('/:gardenId', gardenController.getGarden);
-router.post('/', gardenController.createGarden);
-router.put('/:gardenId', gardenController.updateGarden);
-router.delete('/:gardenId', gardenController.deleteGarden);
+// Only admin can create or update a garden
+router.post('/', authorize('admin'), validate(createGardenSchema), gardenController.createGarden);
+router.put('/:gardenId', authorize('admin'), validate(updateGardenSchema), gardenController.updateGarden);
+router.delete('/:gardenId', authorize('admin'), gardenController.deleteGarden);
 router.post('/:gardenId/join', gardenController.joinGarden);
 router.post('/:gardenId/leave', gardenController.leaveGarden);
 router.get('/:gardenId/members', gardenController.getGardenMembers);
-router.put('/:gardenId/members/:userId/role', gardenController.updateMemberRole);
-router.post('/:gardenId/members/:userId/manage', gardenController.manageMembership);
+router.put('/:gardenId/members/:userId/role', authorize('admin'), gardenController.updateMemberRole);
+router.post('/:gardenId/members/:userId/manage', authorize('admin', 'manager'), gardenController.manageMembership);
 router.get('/:gardenId/stats', gardenController.getGardenStats);
 
 module.exports = router;

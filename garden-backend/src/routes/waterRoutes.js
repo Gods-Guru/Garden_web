@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const waterController = require('../controllers/waterController');
-const { requireAuth } = require('../middleware/auth');
+const auth = require('../middleware/auth');
 
-router.use(requireAuth);
+router.use(auth);
 
 router.get('/', waterController.validatePagination, waterController.getWaterLogs);
 router.get('/:id', waterController.validateId, waterController.getWaterLog);

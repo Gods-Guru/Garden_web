@@ -44,7 +44,13 @@ const userSchema = new mongoose.Schema(
       status: { type: String, enum: ['active', 'pending', 'rejected'], default: 'active' },
       joinedAt: { type: Date, default: Date.now }
     }
-    ]
+    ],
+    phone: { type: String },
+    profilePicture: { type: String },
+    resetToken: { type: String },
+    resetTokenExpires: { type: Date },
+    oauthProvider: { type: String },
+    oauthId: { type: String }
     },
   {
     timestamps: true
