@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const plotController = require('../controllers/plotController');
-const auth = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 const validate = require('../middleware/validate');
-const authorize = require('../middleware/authorize');
+const { authorize } = require('../middleware/authorize');
 const { createPlotSchema, updatePlotSchema } = require('../validation/plotSchemas');
 
 // All routes require authentication
-router.use(auth);
+router.use(requireAuth);
 
 router.get('/', plotController.getPlots);
 router.get('/:id', plotController.getPlot);

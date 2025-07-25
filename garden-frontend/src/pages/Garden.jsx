@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/pagestyles/Garden.scss';
-import { Navbar } from '../components/common/Navbar';
+import Navbar from '../components/common/Navbar';
+
 import Footer from '../components/common/Footer';
+import GardenAdminPanel from '../components/gardens/GardenAdminPanel';
 
 function Spinner() {
   return <div className="spinner" aria-label="Loading" />;
 }
 
-export function Garden() {
+function Garden() {
   const [gardens, setGardens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,6 +52,7 @@ export function Garden() {
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
+        <a href="/gardens/create" className="btn btn-success create-garden-btn">Create Garden</a>
       </header>
       <main className="gardens-main">
         {loading ? (
@@ -72,6 +75,8 @@ export function Garden() {
                   <span>Members: {garden.members?.length ?? '-'}</span>
                 </div>
                 <button className="btn btn-primary">View Garden</button>
+                {/* Show admin panel if user is admin of this garden */}
+                <GardenAdminPanel gardenId={garden._id} />
               </div>
             ))}
           </div>
@@ -81,3 +86,5 @@ export function Garden() {
     </div>
   );
 }
+
+export default Garden;

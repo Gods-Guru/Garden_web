@@ -2,13 +2,13 @@
 const express = require('express');
 const router = express.Router();
 const mediaController = require('../controllers/mediaController');
-const auth = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
 // Upload media (user must be authenticated)
-router.post('/upload', auth, upload.single('image'), mediaController.uploadMedia);
+router.post('/upload', requireAuth, upload.single('image'), mediaController.uploadMedia);
 
 // Get media for a garden or plot
-router.get('/', auth, mediaController.getMedia);
+router.get('/', requireAuth, mediaController.getMedia);
 
 module.exports = router;

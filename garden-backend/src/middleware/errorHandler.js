@@ -1,10 +1,13 @@
+const logger = require('../utils/logger');
+
 // Custom error class
 class AppError extends Error {
-  constructor(message, statusCode) {
+  constructor(message, statusCode, errorCode = null) {
     super(message);
     this.statusCode = statusCode;
     this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
     this.isOperational = true;
+    this.errorCode = errorCode;
 
     Error.captureStackTrace(this, this.constructor);
   }
@@ -70,6 +73,13 @@ const sendErrorProd = (err, res) => {
 const globalErrorHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
+
+  // Log the error with context
+  logger.logError(err, req, {
+    errorCode: err.errorCode,
+    statusCode: err.statusCode,
+    isOperational: err.isOperational
+  });
 
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, res);

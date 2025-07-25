@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import '../styles/pagestyles/Community.scss';
-import { Navbar } from '../components/common/Navbar';
+import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 
 // Simple spinner component

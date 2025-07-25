@@ -27,15 +27,116 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true
     },
+
+    // Email verification
+    emailVerified: {
+      type: Boolean,
+      default: false
+    },
+    emailVerifiedAt: {
+      type: Date
+    },
+
+    // Phone number for 2FA
+    phone: {
+      type: String,
+      trim: true
+    },
+    phoneVerified: {
+      type: Boolean,
+      default: false
+    },
+    phoneVerifiedAt: {
+      type: Date
+    },
+
     password: {
       type: String,
       required: true
     },
+
+    // Two-factor authentication
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false
+    },
+    twoFactorMethod: {
+      type: String,
+      enum: ['email', 'sms'],
+      default: 'email'
+    },
+
+    // Profile information
+    profilePicture: {
+      type: String // URL to profile image
+    },
+    bio: {
+      type: String,
+      maxlength: 500
+    },
+    location: {
+      address: String,
+      city: String,
+      state: String,
+      zipCode: String,
+      coordinates: {
+        type: {
+          type: String,
+          enum: ['Point'],
+          default: 'Point'
+        },
+        coordinates: {
+          type: [Number], // [longitude, latitude]
+          index: '2dsphere'
+        }
+      }
+    },
+
+    // Preferences
+    preferences: {
+      notifications: {
+        email: { type: Boolean, default: true },
+        sms: { type: Boolean, default: false },
+        push: { type: Boolean, default: true }
+      },
+      privacy: {
+        showProfile: { type: Boolean, default: true },
+        showLocation: { type: Boolean, default: false },
+        showPlots: { type: Boolean, default: true }
+      }
+    },
+
+    // Activity tracking
+    lastActive: {
+      type: Date,
+      default: Date.now
+    },
+    joinedAt: {
+      type: Date,
+      default: Date.now
+    },
     role: {
       type: String,
-      enum: ['user', 'admin'],
+      enum: ['guest', 'user', 'garden_manager', 'admin'],
       default: 'user'
     },
+
+    // Garden-specific roles
+    gardenRoles: [{
+      garden: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Garden'
+      },
+      role: {
+        type: String,
+        enum: ['member', 'plot_owner', 'volunteer', 'manager', 'admin'],
+        default: 'member'
+      },
+      assignedAt: {
+        type: Date,
+        default: Date.now
+      }
+    }],
     gardenRoles: [gardenRoleSchema],
     gardens: [
     {

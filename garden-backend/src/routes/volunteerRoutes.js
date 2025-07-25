@@ -1,18 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const volunteerController = require('../controllers/volunteerController');
-const auth = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 
 // Register as a volunteer
-router.post('/register', auth, volunteerController.registerVolunteer);
+router.post('/register', requireAuth, volunteerController.registerVolunteer);
 
 // Get all volunteers
-router.get('/', auth, volunteerController.getAllVolunteers);
+router.get('/', requireAuth, volunteerController.getAllVolunteers);
 
 // Assign badge
-router.patch('/:id/badge', auth, volunteerController.assignBadge);
+router.patch('/:id/badge', requireAuth, volunteerController.assignBadge);
 
 // Add hours
-router.patch('/:id/hours', auth, volunteerController.addHours);
+router.patch('/:id/hours', requireAuth, volunteerController.addHours);
 
 module.exports = router;

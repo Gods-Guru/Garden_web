@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const notificationController = require('../controllers/notificationController');
-const auth = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 
 // Send notification (admin/manager)
-router.post('/', auth, notificationController.sendNotification);
+router.post('/', requireAuth, notificationController.sendNotification);
 
 // Get user notifications
-router.get('/my', auth, notificationController.getUserNotifications);
+router.get('/my', requireAuth, notificationController.getUserNotifications);
 
 // Mark as read
-router.patch('/:id/read', auth, notificationController.markAsRead);
+router.patch('/:id/read', requireAuth, notificationController.markAsRead);
 
 module.exports = router;

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import '../styles/pagestyles/Media.scss';
-import { Navbar } from '../components/common/Navbar';
+import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 
 function Spinner() {
   return <div className="spinner" aria-label="Loading" />;
 }
 
-export function Media() {
+function Media() {
   const [media, setMedia] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -103,3 +103,5 @@ export function Media() {
     </div>
   );
 }
+
+export default Media;

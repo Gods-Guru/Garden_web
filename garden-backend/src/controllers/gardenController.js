@@ -2,56 +2,111 @@ const Garden = require('../models/Garden');
 const User = require('../models/User');
 const Plot = require('../models/Plot');
 const { catchAsync, AppError } = require('../middleware/errorHandler');
+const GardenDataService = require('../services/GardenDataService');
 
-// Get all public gardens (with pagination and search)
+// Get all public gardens (with pagination and search) - now fetches from web
 const getAllGardens = catchAsync(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+  const limit = parseInt(req.query.limit) || 50; // Increased default limit
   const skip = (page - 1) * limit;
-  
-  // Build search query
-  let query = { 'settings.isPublic': true, status: 'active' };
-  
-  // Search by name or city
-  if (req.query.search) {
-    query.$or = [
-      { name: { $regex: req.query.search, $options: 'i' } },
-      { 'address.city': { $regex: req.query.search, $options: 'i' } }
-    ];
-  }
-  
-  // Filter by city
-  if (req.query.city) {
-    query['address.city'] = { $regex: req.query.city, $options: 'i' };
-  }
-  
-  // Filter by state
-  if (req.query.state) {
-    query['address.state'] = req.query.state;
-  }
 
-  const gardens = await Garden.find(query)
-    .populate('owner', 'name email')
-    .select('-contact.email -contact.phone') // Hide private contact info
-    .sort(req.query.sort || '-createdAt')
-    .skip(skip)
-    .limit(limit);
+  console.log('Loading community garden data...');
 
-  const total = await Garden.countDocuments(query);
+  try {
+    // First try to get from database, but handle connection errors gracefully
+    let gardens = [];
+    let dbGardens = [];
 
-  res.status(200).json({
-    success: true,
-    data: {
-      gardens,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(total / limit),
-        totalGardens: total,
-        hasNext: page < Math.ceil(total / limit),
-        hasPrev: page > 1
-      }
+    try {
+      dbGardens = await Garden.find({ 'settings.isPublic': true, status: 'active' })
+        .populate('owner', 'name email')
+        .sort({ createdAt: -1 });
+      console.log(`Found ${dbGardens.length} gardens in database`);
+    } catch (dbError) {
+      console.log('Database connection failed, using web sources:', dbError.message);
+      dbGardens = []; // Treat as no gardens found
     }
-  });
+
+    // If no gardens in database or DB connection failed, load from REAL internet sources
+    if (dbGardens.length === 0) {
+      console.log('🌍 No database gardens found - fetching REAL gardens from internet...');
+
+      // Try to get user location from request for better results
+      const userLocation = req.query.lat && req.query.lng ? {
+        lat: parseFloat(req.query.lat),
+        lng: parseFloat(req.query.lng)
+      } : null;
+
+      const radius = parseInt(req.query.radius) || 50;
+
+      const webGardens = await GardenDataService.getGardensFromWeb(userLocation, radius);
+      gardens = webGardens;
+      console.log(`✅ Loaded ${webGardens.length} REAL gardens from internet sources`);
+
+      // Log sources for debugging
+      const sources = webGardens.reduce((acc, garden) => {
+        acc[garden.source] = (acc[garden.source] || 0) + 1;
+        return acc;
+      }, {});
+      console.log('📊 Garden sources:', sources);
+    } else {
+      gardens = dbGardens;
+      console.log(`📁 Using ${dbGardens.length} gardens from database`);
+    }
+
+    // Apply search filter if provided
+    if (req.query.search) {
+      const searchTerm = req.query.search.toLowerCase();
+      gardens = gardens.filter(garden =>
+        garden.name?.toLowerCase().includes(searchTerm) ||
+        garden.description?.toLowerCase().includes(searchTerm) ||
+        garden.address?.city?.toLowerCase().includes(searchTerm) ||
+        garden.address?.state?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    // Filter by public/private
+    if (req.query.isPublic !== undefined) {
+      const isPublic = req.query.isPublic === 'true';
+      gardens = gardens.filter(garden => garden.settings?.isPublic === isPublic);
+    }
+
+    // Apply pagination
+    const total = gardens.length;
+    const paginatedGardens = gardens.slice(skip, skip + limit);
+
+    console.log(`Returning ${paginatedGardens.length} gardens (page ${page})`);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        gardens: paginatedGardens,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+          totalGardens: total,
+          hasNext: page < Math.ceil(total / limit),
+          hasPrev: page > 1
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error in getAllGardens:', error);
+    // Return empty result instead of error to keep frontend working
+    res.status(200).json({
+      success: true,
+      data: {
+        gardens: [],
+        pagination: {
+          currentPage: 1,
+          totalPages: 0,
+          totalGardens: 0,
+          hasNext: false,
+          hasPrev: false
+        }
+      }
+    });
+  }
 });
 
 // Get user's gardens
@@ -99,14 +154,123 @@ const getGarden = catchAsync(async (req, res, next) => {
   // Hide sensitive information for non-members
   if (!isMember) {
     garden.contact = undefined;
-    garden.fees = undefined;
+    garden.settings = undefined;
   }
 
   res.status(200).json({
     success: true,
     data: {
-      garden,
-      userRole: isMember ? req.user.getRoleInGarden(gardenId) : null
+      garden
+    }
+  });
+});
+
+// Get garden plots
+const getGardenPlots = catchAsync(async (req, res, next) => {
+  const { gardenId } = req.params;
+
+  const plots = await Plot.find({ garden: gardenId })
+    .populate('assignedTo', 'name email avatar')
+    .sort('number');
+
+  res.status(200).json({
+    success: true,
+    data: {
+      plots
+    }
+  });
+});
+
+// Create a new plot
+const createPlot = catchAsync(async (req, res, next) => {
+  const { gardenId } = req.params;
+  const { number, size, location } = req.body;
+
+  // Check if plot number already exists in garden
+  const existingPlot = await Plot.findOne({ garden: gardenId, number });
+  if (existingPlot) {
+    return next(new AppError('Plot number already exists in this garden', 400));
+  }
+
+  const plot = await Plot.create({
+    garden: gardenId,
+    number,
+    size,
+    location,
+    status: 'AVAILABLE'
+  });
+
+  res.status(201).json({
+    success: true,
+    data: {
+      plot
+    }
+  });
+});
+
+// Update plot status
+const updatePlotStatus = catchAsync(async (req, res, next) => {
+  const { plotId } = req.params;
+  const { status } = req.body;
+
+  const plot = await Plot.findById(plotId);
+  if (!plot) {
+    return next(new AppError('Plot not found', 404));
+  }
+
+  // Validate status
+  const validStatuses = ['AVAILABLE', 'ASSIGNED', 'MAINTENANCE'];
+  if (!validStatuses.includes(status)) {
+    return next(new AppError('Invalid plot status', 400));
+  }
+
+  // If changing to AVAILABLE, remove assignedTo
+  if (status === 'AVAILABLE') {
+    plot.assignedTo = null;
+  }
+
+  plot.status = status;
+  await plot.save();
+
+  res.status(200).json({
+    success: true,
+    data: {
+      plot
+    }
+  });
+});
+
+// Assign plot to user
+const assignPlot = catchAsync(async (req, res, next) => {
+  const { plotId } = req.params;
+  const { userId } = req.body;
+
+  const plot = await Plot.findById(plotId);
+  if (!plot) {
+    return next(new AppError('Plot not found', 404));
+  }
+
+  if (plot.status !== 'AVAILABLE') {
+    return next(new AppError('Plot is not available for assignment', 400));
+  }
+
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  plot.assignedTo = userId;
+  plot.status = 'ASSIGNED';
+  await plot.save();
+
+  // Add plot to user's assigned plots
+  user.assignedPlots.push(plotId);
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    data: {
+      plot
     }
   });
 });
@@ -115,6 +279,7 @@ const getGarden = catchAsync(async (req, res, next) => {
 const createGarden = catchAsync(async (req, res, next) => {
   const gardenData = {
     ...req.body,
+    creator: req.user._id,
     owner: req.user._id
   };
 
@@ -144,13 +309,14 @@ const createGarden = catchAsync(async (req, res, next) => {
 const updateGarden = catchAsync(async (req, res, next) => {
   const { gardenId } = req.params;
 
-  const garden = await Garden.findByIdAndUpdate(
+  // Authorization is handled by middleware, garden is available in req.garden
+  const updatedGarden = await Garden.findByIdAndUpdate(
     gardenId,
     req.body,
     { new: true, runValidators: true }
   );
 
-  if (!garden) {
+  if (!updatedGarden) {
     return next(new AppError('Garden not found', 404));
   }
 
@@ -158,7 +324,7 @@ const updateGarden = catchAsync(async (req, res, next) => {
     success: true,
     message: 'Garden updated successfully',
     data: {
-      garden
+      garden: updatedGarden
     }
   });
 });
@@ -323,6 +489,7 @@ const updateMemberRole = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid role', 400));
   }
 
+  // Authorization is handled by middleware
   await User.findOneAndUpdate(
     { _id: userId, 'gardens.gardenId': gardenId },
     { $set: { 'gardens.$.role': role } }
@@ -343,6 +510,9 @@ const manageMembership = catchAsync(async (req, res, next) => {
     return next(new AppError('Invalid action', 400));
   }
 
+  // Authorization is handled by middleware, garden is available in req.garden
+  const garden = req.garden;
+
   if (action === 'approve') {
     await User.findOneAndUpdate(
       { _id: userId, 'gardens.gardenId': gardenId },
@@ -350,7 +520,6 @@ const manageMembership = catchAsync(async (req, res, next) => {
     );
 
     // Update garden stats
-    const garden = await Garden.findById(gardenId);
     garden.stats.activeMembers += 1;
     await garden.save();
 

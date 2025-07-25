@@ -1,19 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const documentController = require('../controllers/documentController');
-const auth = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 // You should use a file upload middleware like multer in production
 
 // Upload document
-router.post('/upload', auth, documentController.uploadDocument);
+router.post('/upload', requireAuth, documentController.uploadDocument);
 
 // Review document (admin)
-router.patch('/:id/review', auth, documentController.reviewDocument);
+router.patch('/:id/review', requireAuth, documentController.reviewDocument);
 
 // Get user documents
-router.get('/my', auth, documentController.getUserDocuments);
+router.get('/my', requireAuth, documentController.getUserDocuments);
 
 // Get all documents (admin)
-router.get('/', auth, documentController.getAllDocuments);
+router.get('/', requireAuth, documentController.getAllDocuments);
 
 module.exports = router;

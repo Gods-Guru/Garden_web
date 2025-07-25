@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const scheduleController = require('../controllers/scheduleController');
-const auth = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 
 // Create schedule/reminder
-router.post('/', auth, scheduleController.createSchedule);
+router.post('/', requireAuth, scheduleController.createSchedule);
 
 // Get user schedules
-router.get('/my', auth, scheduleController.getUserSchedules);
+router.get('/my', requireAuth, scheduleController.getUserSchedules);
 
 // Get all schedules (admin/manager)
-router.get('/', auth, scheduleController.getAllSchedules);
+router.get('/', requireAuth, scheduleController.getAllSchedules);
 
 module.exports = router;

@@ -1,0 +1,128 @@
+@use "sass:color";
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.search {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .search-form {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+
+    .search-input {
+      flex: 1;
+      padding: 0.75rem;
+      border: 1px solid $border-color;
+      border-radius: 4px;
+      font-size: 1rem;
+
+      &:focus {
+        outline: none;
+        border-color: $primary-color;
+        box-shadow: 0 0 0 2px rgba($primary-color, 0.1);
+      }
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      background-color: $primary-color;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      &:hover:not(:disabled) {
+        background-color: color.adjust($primary-color, $lightness: -10%);
+      }
+
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .search-results {
+    .result-category {
+      margin-bottom: 2rem;
+
+      h3 {
+        color: $text-color;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid $border-color;
+      }
+
+      .result-items {
+        display: grid;
+        gap: 1rem;
+
+        .result-item {
+          background-color: white;
+          padding: 1.5rem;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          cursor: pointer;
+          transition: transform 0.3s ease;
+
+          &:hover {
+            transform: translateY(-3px);
+          }
+
+          h4 {
+            color: $primary-color;
+            margin: 0 0 0.5rem;
+          }
+
+          p {
+            color: $text-secondary;
+            margin: 0 0 1rem;
+            line-height: 1.5;
+          }
+
+          .result-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.9rem;
+            color: $text-secondary;
+
+            span {
+              display: flex;
+              align-items: center;
+              gap: 0.25rem;
+
+              &::before {
+                content: '•';
+                color: $border-color;
+              }
+
+              &:first-child::before {
+                display: none;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 3rem;
+    background-color: $background-light;
+    border-radius: 8px;
+    color: $text-secondary;
+  }
+
+  .error {
+    padding: 1rem;
+    background-color: lighten($error-color, 45%);
+    color: $error-color;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+}

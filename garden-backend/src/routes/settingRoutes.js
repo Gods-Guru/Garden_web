@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const settingController = require('../controllers/settingController');
-const auth = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 
 // Get all settings
-router.get('/', auth, settingController.getSettings);
+router.get('/', requireAuth, settingController.getSettings);
 
 // Update a setting
-router.patch('/', auth, settingController.updateSetting);
+router.patch('/', requireAuth, settingController.updateSetting);
 
 module.exports = router;

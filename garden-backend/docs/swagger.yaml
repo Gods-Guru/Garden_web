@@ -1,28 +1,514 @@
 openapi: 3.0.0
 info:
-  title: Community Garden API
+  title: Community Garden Management API
+  description: A comprehensive API for managing community gardens, plots, users, and garden activities
   version: 1.0.0
+  contact:
+    name: Garden Management Team
+    email: support@gardenmanagement.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:5000
+    description: Development server
+  - url: https://api.gardenmanagement.com
+    description: Production server
+
+security:
+  - bearerAuth: []
+
 paths:
-  /api/users/register:
+  # Health Check
+  /health:
+    get:
+      tags:
+        - System
+      summary: Health check endpoint
+      description: Check if the API is running and healthy
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  timestamp:
+                    type: string
+                    format: date-time
+                  uptime:
+                    type: number
+                  version:
+                    type: string
+
+  # Authentication Endpoints
+  /api/auth/register:
     post:
+      tags:
+        - Authentication
       summary: Register a new user
+      description: Create a new user account
+      security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/User'
+              $ref: '#/components/schemas/RegisterRequest'
       responses:
         '201':
-          description: User created
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and return JWT token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/verify-2fa:
+    post:
+      tags:
+        - Authentication
+      summary: Verify 2FA code
+      description: Verify two-factor authentication code
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TwoFactorRequest'
+      responses:
+        '200':
+          description: 2FA verification successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Invalid or expired code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # Garden Endpoints
+  /api/gardens:
+    get:
+      tags:
+        - Gardens
+      summary: Get all gardens
+      description: Retrieve a list of all community gardens
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 10
+        - name: search
+          in: query
+          description: Search term for garden name or description
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of gardens retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GardensResponse'
+
+    post:
+      tags:
+        - Gardens
+      summary: Create a new garden
+      description: Create a new community garden (Admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGardenRequest'
+      responses:
+        '201':
+          description: Garden created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GardenResponse'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
-    User:
+    # Request Schemas
+    RegisterRequest:
       type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - password
+      properties:
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        password:
+          type: string
+          minLength: 8
+          example: SecurePassword123!
+        phone:
+          type: string
+          example: +1234567890
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        password:
+          type: string
+          example: SecurePassword123!
+
+    TwoFactorRequest:
+      type: object
+      required:
+        - email
+        - code
+        - type
+      properties:
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+        code:
+          type: string
+          example: "123456"
+        type:
+          type: string
+          enum: [email, sms]
+          example: email
+
+    CreateGardenRequest:
+      type: object
+      required:
+        - name
+        - description
+        - location
+        - totalArea
+        - totalPlots
+        - plotSize
       properties:
         name:
           type: string
+          example: Sunny Community Garden
+        description:
+          type: string
+          example: A beautiful community garden in the heart of the city
+        location:
+          $ref: '#/components/schemas/Location'
+        geo:
+          $ref: '#/components/schemas/GeoPoint'
+        totalArea:
+          type: number
+          example: 1000
+        totalPlots:
+          type: number
+          example: 20
+        plotSize:
+          $ref: '#/components/schemas/PlotSize'
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rule'
+
+    # Response Schemas
+    AuthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Login successful
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+            token:
+              type: string
+              example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            expiresIn:
+              type: string
+              example: 7d
+
+    GardensResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            gardens:
+              type: array
+              items:
+                $ref: '#/components/schemas/Garden'
+            pagination:
+              $ref: '#/components/schemas/Pagination'
+
+    GardenResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            garden:
+              $ref: '#/components/schemas/Garden'
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: Invalid input data
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        field:
+          type: string
+          example: email
+
+    # Entity Schemas
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        firstName:
+          type: string
+          example: John
+        lastName:
+          type: string
+          example: Doe
         email:
           type: string
-        password:
+          format: email
+          example: john.doe@example.com
+        role:
           type: string
+          enum: [user, admin]
+          example: user
+        status:
+          type: string
+          enum: [active, inactive, banned]
+          example: active
+        twoFactorEnabled:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+        lastLogin:
+          type: string
+          format: date-time
+
+    Garden:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        name:
+          type: string
+          example: Sunny Community Garden
+        description:
+          type: string
+          example: A beautiful community garden in the heart of the city
+        location:
+          $ref: '#/components/schemas/Location'
+        geo:
+          $ref: '#/components/schemas/GeoPoint'
+        totalArea:
+          type: number
+          example: 1000
+        totalPlots:
+          type: number
+          example: 20
+        plotSize:
+          $ref: '#/components/schemas/PlotSize'
+        rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/Rule'
+        owner:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        creator:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        status:
+          type: string
+          enum: [active, inactive, maintenance]
+          example: active
+        createdAt:
+          type: string
+          format: date-time
+
+    Location:
+      type: object
+      properties:
+        address:
+          type: string
+          example: 123 Garden Street
+        city:
+          type: string
+          example: New York
+        state:
+          type: string
+          example: NY
+        zipCode:
+          type: string
+          example: "10001"
+        country:
+          type: string
+          example: United States
+
+    GeoPoint:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [Point]
+          example: Point
+        coordinates:
+          type: array
+          items:
+            type: number
+          minItems: 2
+          maxItems: 2
+          example: [-74.006, 40.7128]
+
+    PlotSize:
+      type: object
+      properties:
+        width:
+          type: number
+          example: 10
+        height:
+          type: number
+          example: 10
+
+    Rule:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Rule 1
+        description:
+          type: string
+          example: Be respectful to other gardeners
+
+    Pagination:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+          example: 1
+        totalPages:
+          type: integer
+          example: 5
+        totalItems:
+          type: integer
+          example: 50
+        itemsPerPage:
+          type: integer
+          example: 10
+        hasNextPage:
+          type: boolean
+          example: true
+        hasPrevPage:
+          type: boolean
+          example: false

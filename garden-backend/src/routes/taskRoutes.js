@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const taskController = require('../controllers/taskController');
-const auth = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 const validate = require('../middleware/validate');
-const authorize = require('../middleware/authorize');
+const { authorize } = require('../middleware/authorize');
 const { createTaskSchema, updateTaskSchema } = require('../validation/taskSchemas');
 
-router.use(auth);
+router.use(requireAuth);
 
 router.get('/', taskController.getTasks);
 router.get('/:id', taskController.getTask);
