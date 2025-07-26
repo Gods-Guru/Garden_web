@@ -45,6 +45,30 @@ const sanitizeObject = (obj) => {
   return sanitized;
 };
 
+// Custom MongoDB sanitization function
+const sanitizeMongoObject = (obj) => {
+  if (typeof obj !== 'object' || obj === null) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeMongoObject(item));
+  }
+
+  const sanitized = {};
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      // Remove MongoDB operators
+      if (key.startsWith('$') || key.includes('.')) {
+        continue; // Skip dangerous keys
+      }
+      sanitized[key] = sanitizeMongoObject(obj[key]);
+    }
+  }
+
+  return sanitized;
+};
+
 // Request size limiting
 const requestSizeLimit = (req, res, next) => {
   const contentLength = parseInt(req.get('Content-Length'));
@@ -152,7 +176,22 @@ module.exports = {
   requestLogger,
   healthCheck,
   formatErrorResponse,
-  mongoSanitize: mongoSanitize({
-    replaceWith: '_'
-  })
+  mongoSanitize: (req, res, next) => {
+    // Custom mongo sanitization to avoid middleware conflicts
+    try {
+      if (req.body) {
+        req.body = sanitizeMongoObject(req.body);
+      }
+      if (req.query) {
+        req.query = sanitizeMongoObject(req.query);
+      }
+      if (req.params) {
+        req.params = sanitizeMongoObject(req.params);
+      }
+      next();
+    } catch (error) {
+      console.error('Sanitization error:', error);
+      next();
+    }
+  }
 };
