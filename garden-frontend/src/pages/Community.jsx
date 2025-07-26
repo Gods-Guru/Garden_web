@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import '../styles/pagestyles/Community.scss';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
+import communGardenImg from '../assets/images/commun-garden.jpg';
 
 // Simple spinner component
 function Spinner() {
@@ -186,7 +187,7 @@ function Community() {
             </a>
           </div>
         </div>
-        <div className="hero-image image-placeholder"></div>
+        <img src={communGardenImg} alt="Community Garden" className="hero-image" />
       </header>
 
       {toast && <Toast message={toast} onClose={() => setToast(null)} />}

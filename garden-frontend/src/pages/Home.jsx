@@ -3,8 +3,16 @@ import { Link } from 'react-router-dom';
 import '../styles/pagestyles/Home.scss';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
+import myGardenImg from '../assets/images/my-garden.jpg';
+import createImg from '../assets/images/create.jpg';
+import joinGardenImg from '../assets/images/join-garden.jpg';
+import getPlotImg from '../assets/images/get-plot.jpg';
+import growingPlantImg from '../assets/images/growing-plant.jpg';
+import mariaAvatar from '../assets/images/kelsey-he-J9s9GQSRX6U-unsplash.jpg';
+import jamesAvatar from '../assets/images/jonathan-kemper-3fgC5r65CU0-unsplash.jpg';
+import sarahAvatar from '../assets/images/graig-durant-qc6r9yOOr5k-unsplash.jpg';
 
-function Home() {
+export function Home() {
   return (
     <div className="home-page">
       <Navbar />
@@ -34,6 +42,7 @@ function Home() {
             <div className="hero-image image-placeholder"></div>
           </div>
         </div>
+        <img src={myGardenImg} alt="Beautiful Garden" className="hero-image" />
       </header>
 
       {/* Stats Bar */}
@@ -111,85 +120,88 @@ function Home() {
 
       {/* How It Works */}
       <section className="home-how">
-        <div className="container">
-          <div className="section-header">
-            <h2>Getting Started is Easy</h2>
-            <p className="section-subtitle">Join thousands of gardeners in just a few simple steps</p>
+        <div className="section-header">
+          <h2>Getting Started is Easy</h2>
+          <p className="section-subtitle">Join thousands of gardeners in just a few simple steps</p>
+        </div>
+        <div className="steps-container">
+          <div className="step">
+            <div className="step-number">1</div>
+            <div className="step-content">
+              <h3>Create Your Account</h3>
+              <p>Sign up in minutes with your email address and basic information.</p>
+            </div>
+            <img src={createImg} alt="Create Account" className="step-image" />
           </div>
-          <div className="steps-container">
-            {[
-              {
-                number: '1',
-                title: 'Create Your Account',
-                description: 'Sign up in minutes with your email address and basic information.',
-              },
-              {
-                number: '2',
-                title: 'Join a Garden',
-                description: 'Find and request to join a community garden near you or start your own.',
-              },
-              {
-                number: '3',
-                title: 'Get Your Plot',
-                description: 'Work with garden admins to get assigned your growing space.',
-              },
-              {
-                number: '4',
-                title: 'Start Growing',
-                description: 'Use our tools to plan, track, and share your gardening journey.',
-              }
-            ].map((step, index) => (
-              <div className="step" key={index}>
-                <div className="step-number">{step.number}</div>
-                <div className="step-content">
-                  <h3>{step.title}</h3>
-                  <p>{step.description}</p>
-                </div>
-                <div className="step-image image-placeholder"></div>
-              </div>
-            ))}
+          <div className="step">
+            <div className="step-number">2</div>
+            <div className="step-content">
+              <h3>Join a Garden</h3>
+              <p>Find and request to join a community garden near you or start your own.</p>
+            </div>
+            <img src={joinGardenImg} alt="Join a Garden" className="step-image" />
+          </div>
+          <div className="step">
+            <div className="step-number">3</div>
+            <div className="step-content">
+              <h3>Get Your Plot</h3>
+              <p>Work with garden admins to get assigned your growing space.</p>
+            </div>
+            <img src={getPlotImg} alt="Get Your Plot" className="step-image" />
+          </div>
+          <div className="step">
+            <div className="step-number">4</div>
+            <div className="step-content">
+              <h3>Start Growing</h3>
+              <p>Use our tools to plan, track, and share your gardening journey.</p>
+            </div>
+            <img src={growingPlantImg} alt="Start Growing" className="step-image" />
           </div>
         </div>
       </section>
 
       {/* Testimonials */}
       <section className="testimonials">
-        <div className="container">
-          <div className="section-header">
-            <h2>What Our Gardeners Say</h2>
-            <p className="section-subtitle">Hear from our thriving community members</p>
-          </div>
-          <div className="testimonial-grid">
-            {[
-              {
-                quote: '"Rooted transformed how our community garden operates. Coordination is so much easier now!"',
-                name: 'Maria Gonzalez',
-                role: 'Community Garden Leader'
-              },
-              {
-                quote: '"As a beginner gardener, the task reminders and plant tracking have been invaluable to my success."',
-                name: 'James Wilson',
-                role: 'Urban Gardener'
-              },
-              {
-                quote: '"Our yield increased by 40% after implementing the planning tools from Rooted."',
-                name: 'Sarah Chen',
-                role: 'Farm Coordinator'
-              }
-            ].map((testimonial, index) => (
-              <div className="testimonial-card" key={index}>
-                <div className="testimonial-content">
-                  <p>{testimonial.quote}</p>
-                </div>
-                <div className="testimonial-author">
-                  <div className="author-avatar image-placeholder"></div>
-                  <div className="author-info">
-                    <h4>{testimonial.name}</h4>
-                    <p>{testimonial.role}</p>
-                  </div>
-                </div>
+        <div className="section-header">
+          <h2>What Our Gardeners Say</h2>
+          <p className="section-subtitle">Hear from our thriving community members</p>
+        </div>
+        <div className="testimonial-grid">
+          <div className="testimonial-card">
+            <div className="testimonial-content">
+              <p>"Rooted transformed how our community garden operates. Coordination is so much easier now!"</p>
+            </div>
+            <div className="testimonial-author">
+              <img src={mariaAvatar} alt="Maria Gonzalez" className="author-avatar" />
+              <div className="author-info">
+                <h4>Maria Gonzalez</h4>
+                <p>Community Garden Leader</p>
               </div>
-            ))}
+            </div>
+          </div>
+          <div className="testimonial-card">
+            <div className="testimonial-content">
+              <p>"As a beginner gardener, the task reminders and plant tracking have been invaluable to my success."</p>
+            </div>
+            <div className="testimonial-author">
+              <img src={jamesAvatar} alt="James Wilson" className="author-avatar" />
+              <div className="author-info">
+                <h4>James Wilson</h4>
+                <p>Urban Gardener</p>
+              </div>
+            </div>
+          </div>
+          <div className="testimonial-card">
+            <div className="testimonial-content">
+              <p>"Our yield increased by 40% after implementing the planning tools from Rooted."</p>
+            </div>
+            <div className="testimonial-author">
+              <img src={sarahAvatar} alt="Sarah Chen" className="author-avatar" />
+              <div className="author-info">
+                <h4>Sarah Chen</h4>
+                <p>Farm Coordinator</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
