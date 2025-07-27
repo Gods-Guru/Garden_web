@@ -144,9 +144,19 @@ exports.login = async (req, res, next) => {
     }
 
     // Generate JWT token for successful login
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '7d'
-    });
+    const token = jwt.sign(
+      {
+        id: user._id,
+        iat: Math.floor(Date.now() / 1000),
+        type: 'access'
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRE || '24h',
+        issuer: 'garden-management-system',
+        audience: 'garden-users'
+      }
+    );
 
     console.log(`✅ User logged in: ${user.email}`);
 
@@ -214,9 +224,19 @@ exports.verifyEmail = async (req, res, next) => {
     await EmailService.sendWelcomeEmail(email, user.name);
 
     // Generate JWT token for verified user
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '7d'
-    });
+    const token = jwt.sign(
+      {
+        id: user._id,
+        iat: Math.floor(Date.now() / 1000),
+        type: 'access'
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRE || '24h',
+        issuer: 'garden-management-system',
+        audience: 'garden-users'
+      }
+    );
 
     res.json({
       success: true,
@@ -319,9 +339,19 @@ exports.verify2FA = async (req, res, next) => {
     }
 
     // Generate JWT token for successful 2FA
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '7d'
-    });
+    const token = jwt.sign(
+      {
+        id: user._id,
+        iat: Math.floor(Date.now() / 1000),
+        type: 'access'
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRE || '24h',
+        issuer: 'garden-management-system',
+        audience: 'garden-users'
+      }
+    );
 
     console.log(`✅ 2FA verified for user: ${user.email}`);
 
@@ -345,5 +375,39 @@ exports.verify2FA = async (req, res, next) => {
   } catch (error) {
     console.error('❌ 2FA verification error:', error);
     next(error);
+  }
+};
+
+// Get current user (for token verification)
+exports.getCurrentUser = async (req, res, next) => {
+  try {
+    // User is already attached to req by requireAuth middleware
+    const user = req.user;
+
+    res.json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        emailVerified: user.emailVerified,
+        phoneVerified: user.phoneVerified,
+        twoFactorEnabled: user.twoFactorEnabled,
+        gardens: user.gardens || [],
+        profilePicture: user.profilePicture,
+        bio: user.bio,
+        location: user.location,
+        preferences: user.preferences,
+        lastActive: user.lastActive,
+        joinedAt: user.joinedAt
+      }
+    });
+  } catch (error) {
+    console.error('Get current user error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
   }
 };

@@ -27,6 +27,7 @@
     "@googlemaps/react-wrapper": "^1.2.0",
     "axios": "^1.10.0",
     "fi": "^1.0.16",
+    "framer-motion": "^12.23.9",
     "leaflet": "^1.9.4",
     "leaflet-defaulticon-compatibility": "^0.1.2",
     "leaflet.markercluster": "^1.5.3",

@@ -214,10 +214,59 @@ const useAuthStore = create(
       },
 
       // Update user gardens (after joining/leaving)
-      updateUserGardens: (gardens) => set({ 
+      updateUserGardens: (gardens) => set({
         userGardens: gardens,
         user: { ...get().user, gardens }
       }),
+
+      // Initialize auth state from localStorage
+      initializeAuth: () => {
+        const storedToken = localStorage.getItem('token');
+        const { token, user } = get();
+
+        if (storedToken && !token) {
+          // Token exists in localStorage but not in store
+          set({ token: storedToken, isAuthenticated: !!user });
+        } else if (!storedToken && token) {
+          // Token exists in store but not in localStorage
+          localStorage.setItem('token', token);
+        }
+      },
+
+      // Validate current token
+      validateToken: async () => {
+        const { token } = get();
+        if (!token) return false;
+
+        try {
+          const response = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.user) {
+              // Update user data if token is valid
+              set({
+                user: data.user,
+                isAuthenticated: true,
+                userGardens: data.user.gardens || []
+              });
+              return true;
+            }
+          }
+
+          // Token is invalid, clear auth state
+          get().logout();
+          return false;
+        } catch (error) {
+          console.error('Token validation error:', error);
+          get().logout();
+          return false;
+        }
+      },
 
     }),
     {

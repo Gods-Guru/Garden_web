@@ -2,8 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
 import useGardenStore from '../store/useGardenStore';
-import UserDashboard from './UserDashboard';
-import AdminDashboard from './Admin/AdminDashboard';
+import RoleBasedDashboard from '../components/dashboard/RoleBasedDashboard';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const Dashboard = () => {
@@ -26,13 +25,8 @@ const Dashboard = () => {
     return null;
   }
 
-  // Route to appropriate dashboard based on user role
-  if (user.role === 'admin') {
-    return <AdminDashboard />;
-  }
-
-  // Default to user dashboard for regular users
-  return <UserDashboard />;
+  // Use role-based dashboard component
+  return <RoleBasedDashboard />;
 };
 
 export default Dashboard;

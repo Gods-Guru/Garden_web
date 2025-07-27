@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import useAuthInit from './hooks/useAuthInit'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import Home from './pages/Home'
+import About from './pages/About'
 import Register from './pages/Register'
 import Login from './pages/Login'
 import EmailVerification from './pages/EmailVerification'
@@ -21,7 +22,7 @@ import AdminDashboard from './pages/Admin/AdminDashboard'
 import UserManagement from './pages/Admin/UserManagement'
 import AuditLog from './pages/Admin/AuditLog'
 import AdminSettings from './pages/Admin/AdminSettings'
-import SecondAdminDashboard from './pages/SecondAdmin/SecondAdminDashboard'
+import ManagerDashboard from './components/dashboard/ManagerDashboard'
 import SecondAdminGardens from './pages/SecondAdmin/SecondAdminGardens'
 import SecondAdminCommunity from './pages/SecondAdmin/SecondAdminCommunity'
 import SecondAdminEvents from './pages/SecondAdmin/SecondAdminEvents'
@@ -44,6 +45,7 @@ export default function App() {
         <Routes>
         {/* Public routes */}
         <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         {/* Verification routes */}
@@ -138,27 +140,27 @@ export default function App() {
           </ProtectedRoute>
         } />
 
-        {/* Second-level admin routes */}
-        <Route path="/second-admin/dashboard" element={
-          <ProtectedRoute roles={['admin', 'secondAdmin']}>
-            <SecondAdminDashboard />
+        {/* Manager routes */}
+        <Route path="/manager/dashboard" element={
+          <ProtectedRoute roles={['admin', 'manager']}>
+            <ManagerDashboard />
           </ProtectedRoute>
         } />
 
-        <Route path="/second-admin/gardens" element={
-          <ProtectedRoute roles={['admin', 'secondAdmin']}>
+        <Route path="/manager/gardens" element={
+          <ProtectedRoute roles={['admin', 'manager']}>
             <SecondAdminGardens />
           </ProtectedRoute>
         } />
 
-        <Route path="/second-admin/community" element={
-          <ProtectedRoute roles={['admin', 'secondAdmin']}>
+        <Route path="/manager/community" element={
+          <ProtectedRoute roles={['admin', 'manager']}>
             <SecondAdminCommunity />
           </ProtectedRoute>
         } />
 
-        <Route path="/second-admin/events" element={
-          <ProtectedRoute roles={['admin', 'secondAdmin']}>
+        <Route path="/manager/events" element={
+          <ProtectedRoute roles={['admin', 'manager']}>
             <SecondAdminEvents />
           </ProtectedRoute>
         } />

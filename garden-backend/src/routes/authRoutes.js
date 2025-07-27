@@ -5,12 +5,17 @@ const {
   login,
   verifyEmail,
   resendVerification,
-  verify2FA
+  verify2FA,
+  getCurrentUser
 } = require('../controllers/authController');
+const { requireAuth } = require('../middleware/auth');
 
 // Authentication routes
 router.post('/register', register);
 router.post('/login', login);
+
+// Get current user (protected route)
+router.get('/me', requireAuth, getCurrentUser);
 
 // Verification routes
 router.post('/verify-email', verifyEmail);

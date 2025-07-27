@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import useAuthStore from '../../store/useAuthStore';
 import './CreateGarden.scss';
 
 // Helper function to parse rules from textarea input
@@ -43,6 +44,7 @@ const parseRules = (rulesText) => {
 
 function CreateGarden({ onGardenCreated }) {
   const navigate = useNavigate();
+  const { token, user, isAuthenticated, logout, validateToken } = useAuthStore();
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -76,6 +78,7 @@ function CreateGarden({ onGardenCreated }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [createdGardenId, setCreatedGardenId] = useState(null);
 
   const handleChange = e => {
     const { name, value, type, checked } = e.target;
@@ -101,6 +104,8 @@ function CreateGarden({ onGardenCreated }) {
     setImages(Array.from(e.target.files));
   };
 
+
+
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
@@ -108,11 +113,12 @@ function CreateGarden({ onGardenCreated }) {
     setLoading(true);
 
     try {
-      // Get JWT token from localStorage
-      const token = localStorage.getItem('token');
-      if (!token) {
+      // Check authentication
+      if (!isAuthenticated || !token) {
         throw new Error('Authentication required. Please log in.');
       }
+
+
 
       // Validate required fields
       if (!form.name || !form.description || !form.address.street || !form.address.city || !form.address.state) {
@@ -169,19 +175,37 @@ function CreateGarden({ onGardenCreated }) {
 
       if (!res.ok) {
         const errorMessage = data.message || data.error || `HTTP ${res.status}: Failed to create garden`;
-        console.error('Garden creation failed:', errorMessage);
+        console.error('Garden creation failed:', data.message || data.error);
+
+        // Handle authentication errors specifically
+        if (res.status === 401 || (data.code && ['INVALID_TOKEN', 'TOKEN_EXPIRED', 'NO_TOKEN'].includes(data.code))) {
+          const errorMsg = `Authentication error: ${data.message || data.error || 'Invalid token'}`;
+          setError(errorMsg);
+          return;
+        }
+
         throw new Error(errorMessage);
       }
 
       setSuccess(true);
+      setCreatedGardenId(data.data.garden._id);
       toast.success('Garden created successfully!');
+
+      // Refresh user data to include the new garden
+      try {
+        await validateToken(); // This will refresh the user data
+      } catch (refreshError) {
+        console.warn('Could not refresh user data:', refreshError);
+      }
 
       if (onGardenCreated) {
         onGardenCreated(data.data.garden);
       }
 
-      // Navigate to gardens list or garden detail page
-      navigate('/gardens');
+      // Don't auto-navigate, let user test permissions first
+      // setTimeout(() => {
+      //   navigate(`/gardens/${data.data.garden._id}/manage`);
+      // }, 1500);
     } catch (err) {
       setError(err.message);
       toast.error(err.message);
@@ -193,10 +217,73 @@ function CreateGarden({ onGardenCreated }) {
   return (
     <div className="create-garden-form">
       <h2>Create a New Garden</h2>
-      {error && <div className="form-error">{error}</div>}
-      {success && <div className="form-success">Garden created successfully!</div>}
-      
-      <form onSubmit={handleSubmit}>
+      {error && (
+        <div className="form-error">
+          {error}
+          {error.includes('Authentication error') && (
+            <div style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#666' }}>
+              Try <button
+                type="button"
+                onClick={() => { logout(); navigate('/login'); }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#3b82f6',
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem'
+                }}
+              >
+                logging out and back in
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+      {success && (
+        <div>
+          <div className="form-success">
+            Garden created successfully! 🎉
+            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+              <button
+                type="button"
+                onClick={() => navigate(`/gardens/${createdGardenId}/manage`)}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: '#10b981',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: '500',
+                  marginRight: '1rem'
+                }}
+              >
+                Manage Garden →
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard')}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: '#6b7280',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: '500'
+                }}
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!success && <form onSubmit={handleSubmit}>
         <div className="form-section">
           <h3>Basic Information</h3>
           <div className="form-group">
@@ -479,7 +566,7 @@ function CreateGarden({ onGardenCreated }) {
             {loading ? 'Creating...' : 'Create Garden'}
           </button>
         </div>
-      </form>
+      </form>}
     </div>
   );
 }

@@ -1,0 +1,48 @@
+// Import variables and mixins
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// Global styles
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  line-height: 1.6;
+  color: $text-color;
+  background-color: $background-light;
+}
+
+// Global button styles
+.btn {
+  @include button-base;
+
+  &.btn-primary {
+    background: $primary-color;
+    color: white;
+
+    &:hover {
+      background: $primary-dark;
+      transform: translateY(-2px);
+    }
+  }
+
+  &.btn-secondary {
+    background: transparent;
+    color: $primary-color;
+    border: 2px solid $primary-color;
+
+    &:hover {
+      background: $primary-color;
+      color: white;
+    }
+  }
+}
+
+// Global card styles
+.card {
+  @include card-base;
+}

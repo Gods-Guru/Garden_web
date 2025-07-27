@@ -4,6 +4,7 @@ import useAuthStore from '../store/useAuthStore';
 import useGardenStore from '../store/useGardenStore';
 import useNotificationStore from '../store/useNotificationStore';
 import Navbar from '../components/common/Navbar';
+import Footer from '../components/common/Footer';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import GardenCard from '../components/gardens/GardenCard';
 import TaskList from '../components/tasks/TaskList';
@@ -193,6 +194,8 @@ const UserDashboard = () => {
           )}
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 };

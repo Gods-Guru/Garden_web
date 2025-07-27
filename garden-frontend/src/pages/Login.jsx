@@ -138,7 +138,7 @@ function Login() {
     <div className="auth-container">
       <div className="auth-hero">
         <div className="hero-content">
-          <h1>Welcome Back to <span>GreenSpace</span></h1>
+          <h1>Welcome Back to <span>Rooted</span></h1>
           <p>Connect with your gardening community and manage your plots</p>
           <div className="hero-image image-placeholder"></div>
         </div>

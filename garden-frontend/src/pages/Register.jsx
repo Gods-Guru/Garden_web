@@ -158,7 +158,7 @@ const Register = () => {
       <div className="auth-container">
       <div className="auth-hero">
         <div className="hero-content">
-          <h1>Join the <span>GreenSpace</span> Community</h1>
+          <h1>Join the <span>Rooted</span> Community</h1>
           <p>Connect with local gardeners and manage your plots with ease</p>
           <div className="hero-image image-placeholder"></div>
         </div>

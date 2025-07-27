@@ -117,26 +117,11 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['guest', 'user', 'garden_manager', 'admin'],
+      enum: ['guest', 'user', 'manager', 'admin'],
       default: 'user'
     },
 
-    // Garden-specific roles
-    gardenRoles: [{
-      garden: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Garden'
-      },
-      role: {
-        type: String,
-        enum: ['member', 'plot_owner', 'volunteer', 'manager', 'admin'],
-        default: 'member'
-      },
-      assignedAt: {
-        type: Date,
-        default: Date.now
-      }
-    }],
+    // Garden-specific roles (legacy - keeping for backward compatibility)
     gardenRoles: [gardenRoleSchema],
     gardens: [
     {

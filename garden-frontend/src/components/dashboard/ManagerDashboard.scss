@@ -1,0 +1,307 @@
+// Manager Dashboard - Administrative theme with green/grey tones
+.manager-dashboard {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+
+  .dashboard-header.manager-theme {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 0 0 20px 20px;
+    margin-bottom: 2rem;
+
+    .header-content {
+      text-align: center;
+      margin-bottom: 2rem;
+
+      h1 {
+        font-size: 2.3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+
+      p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+    }
+
+    .manager-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      max-width: 800px;
+      margin: 0 auto;
+
+      .stat-card {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+
+        &.pending {
+          background: rgba(251, 191, 36, 0.2);
+          border-color: rgba(251, 191, 36, 0.4);
+        }
+
+        .stat-icon {
+          font-size: 2rem;
+          display: block;
+          margin-bottom: 0.5rem;
+        }
+
+        .stat-number {
+          font-size: 2rem;
+          font-weight: 700;
+          display: block;
+          margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+          font-size: 0.9rem;
+          opacity: 0.9;
+        }
+      }
+    }
+  }
+
+  .dashboard-tabs.manager-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 0 2rem;
+
+    .tab {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &:hover {
+        border-color: #0ea5e9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+      }
+
+      &.active {
+        background: #0ea5e9;
+        color: white;
+        border-color: #0ea5e9;
+      }
+
+      .tab-icon {
+        font-size: 1.2rem;
+      }
+    }
+  }
+
+  .dashboard-content {
+    padding: 0 2rem 2rem;
+
+    .content-grid.manager-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+
+      .content-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f0f0f0;
+
+        &.priority {
+          border-left: 4px solid #f59e0b;
+          background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        }
+
+        h3 {
+          font-size: 1.3rem;
+          font-weight: 600;
+          margin-bottom: 1.5rem;
+          color: #1f2937;
+        }
+
+        .requests-list {
+          .request-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid #e5e7eb;
+
+            .request-info {
+              display: flex;
+              flex-direction: column;
+              gap: 0.25rem;
+
+              .requester-name {
+                font-weight: 600;
+                color: #1f2937;
+              }
+
+              .request-plot {
+                font-size: 0.9rem;
+                color: #6b7280;
+              }
+            }
+
+            .request-actions {
+              display: flex;
+              gap: 0.5rem;
+
+              .btn {
+                padding: 0.5rem 1rem;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: all 0.3s ease;
+
+                &.btn-success {
+                  background: #10b981;
+                  color: white;
+
+                  &:hover {
+                    background: #059669;
+                  }
+                }
+
+                &.btn-danger {
+                  background: #ef4444;
+                  color: white;
+
+                  &:hover {
+                    background: #dc2626;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        .gardens-list {
+          .garden-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+
+            .garden-info {
+              h4 {
+                margin: 0 0 0.25rem 0;
+                color: #1f2937;
+              }
+
+              .garden-role {
+                font-size: 0.9rem;
+                color: #0ea5e9;
+                font-weight: 500;
+                text-transform: capitalize;
+              }
+            }
+
+            .btn {
+              background: #0ea5e9;
+              color: white;
+              border: none;
+              padding: 0.5rem 1rem;
+              border-radius: 6px;
+              text-decoration: none;
+              transition: all 0.3s ease;
+
+              &:hover {
+                background: #0284c7;
+              }
+            }
+          }
+        }
+
+        .quick-actions.manager-actions {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
+
+          .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #374151;
+            transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
+
+            &:hover {
+              background: #f1f5f9;
+              transform: translateY(-1px);
+              border-color: #0ea5e9;
+            }
+
+            .action-icon {
+              font-size: 1.5rem;
+            }
+          }
+        }
+
+        .view-all-link {
+          color: #0ea5e9;
+          text-decoration: none;
+          font-weight: 500;
+          display: inline-block;
+          margin-top: 1rem;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .manager-dashboard {
+    .dashboard-header.manager-theme {
+      padding: 1.5rem;
+
+      .manager-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .dashboard-tabs.manager-tabs {
+      flex-wrap: wrap;
+      padding: 0 1rem;
+    }
+
+    .dashboard-content {
+      padding: 0 1rem 2rem;
+
+      .content-grid.manager-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+    }
+  }
+}

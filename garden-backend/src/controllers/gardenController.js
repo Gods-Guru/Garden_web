@@ -286,15 +286,19 @@ const createGarden = catchAsync(async (req, res, next) => {
   const garden = await Garden.create(gardenData);
 
   // Add user as owner of the garden
-  await User.findByIdAndUpdate(req.user._id, {
-    $push: {
-      gardens: {
-        gardenId: garden._id,
-        role: 'owner',
-        status: 'active'
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $push: {
+        gardens: {
+          gardenId: garden._id,
+          role: 'owner',
+          status: 'active'
+        }
       }
-    }
-  });
+    },
+    { new: true } // Return the updated document
+  );
 
   res.status(201).json({
     success: true,

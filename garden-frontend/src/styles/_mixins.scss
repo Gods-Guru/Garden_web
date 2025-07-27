@@ -1,0 +1,62 @@
+// Flexbox Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// Section Padding Mixin
+@mixin section-padding {
+  padding: 6rem 1rem;
+
+  @media (min-width: 768px) {
+    padding: 8rem 1rem;
+  }
+}
+
+// Button Mixins
+@mixin button-base {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: $border-radius;
+  font-weight: 600;
+  text-decoration: none;
+  transition: $transition;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// Card Mixins
+@mixin card-base {
+  background: $white;
+  border-radius: $border-radius;
+  box-shadow: $shadow-md;
+  transition: $transition;
+}
+
+// Responsive Mixins
+@mixin mobile {
+  @media (max-width: 767px) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: 768px) and (max-width: 1023px) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: 1024px) {
+    @content;
+  }
+}

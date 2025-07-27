@@ -45,12 +45,28 @@ const requireAuth = async (req, res, next) => {
     }
 
     // Verify token with enhanced error handling
-    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
-      issuer: 'garden-management-system',
-      audience: 'garden-users'
-    });
+    // Try new format first, then fall back to old format for backward compatibility
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET, {
+        issuer: 'garden-management-system',
+        audience: 'garden-users'
+      });
+    } catch (error) {
+      // If new format fails, try old format (for backward compatibility)
+      try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log('Using legacy token format for user:', decoded.id);
+      } catch (legacyError) {
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid token. Please log in again.',
+          code: 'INVALID_TOKEN'
+        });
+      }
+    }
 
-    // Get user from database with error handling
+    // Get user from database with error handling (always fetch fresh data)
     const user = await User.findById(decoded.id).select('-password');
 
     if (!user) {
