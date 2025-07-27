@@ -203,6 +203,17 @@ app.use('/api/qrcodes', qrCodeRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/community', communityStatsRoutes);
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    version: '1.0.0'
+  });
+});
+
 // Example route
 app.get('/', (req, res) => {
   res.send('Community Garden API running 🌿');

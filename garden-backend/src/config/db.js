@@ -12,7 +12,12 @@ const connectDB = async () => {
       bufferCommands: false, // Disable mongoose buffering
     };
 
-    await mongoose.connect(process.env.MONGO_URI, options);
+    const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+    if (!mongoUri) {
+      throw new Error('MongoDB URI not found in environment variables. Please set MONGODB_URI.');
+    }
+
+    await mongoose.connect(mongoUri, options);
     console.log('✅ MongoDB connected successfully');
 
     // Wait a moment for connection to be fully ready
