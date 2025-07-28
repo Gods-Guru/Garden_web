@@ -8,7 +8,13 @@ const { AppError } = require('../middleware/errorHandler');
 // Get tasks (role-based filtering and data)
 const getTasks = catchAsync(async (req, res, next) => {
   const { gardenId } = req.params;
-  const userRole = req.user.getRoleInGarden(gardenId);
+
+  // Handle case where gardenId is not provided (get all user tasks)
+  if (!gardenId) {
+    return getMyTasks(req, res, next);
+  }
+
+  const userRole = req.user.getRoleInGarden && req.user.getRoleInGarden(gardenId);
 
   if (!userRole) {
     return next(new AppError('You are not a member of this garden', 403));

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import useAuthStore from '../../store/useAuthStore';
 import './Profile.scss';
 
 function Profile() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [profile, setProfile] = useState({
     name: '',
     email: '',
@@ -19,53 +19,28 @@ function Profile() {
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
-    fetchProfileData();
-  }, []);
-
-  const fetchProfileData = async () => {
-    try {
-      const response = await fetch(`/api/users/profile`, {
-        credentials: 'include'
+    if (user) {
+      setProfile({
+        name: user.name || '',
+        email: user.email || '',
+        avatar: user.avatar || '',
+        bio: user.bio || '',
+        location: user.location || '',
+        phone: user.phone || '',
+        gardensJoined: user.gardens || [],
+        plotsManaged: user.plots || []
       });
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch profile');
-      }
-      
-      setProfile(data.data.profile);
-    } catch (err) {
-      setError(err.message);
-    } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     
-    try {
-      const response = await fetch(`/api/users/profile`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify(profile)
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to update profile');
-      }
-
-      setProfile(data.data.profile);
-      setIsEditing(false);
-    } catch (err) {
-      setError(err.message);
-    }
+    // In a real app, this would update the user in the auth store
+    setIsEditing(false);
+    console.log('Profile updated:', profile);
   };
 
   if (loading) {

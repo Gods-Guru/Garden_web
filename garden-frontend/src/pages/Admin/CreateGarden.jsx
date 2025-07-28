@@ -155,8 +155,7 @@ function CreateGarden({ onGardenCreated }) {
         rules: parseRules(form.settings.rules)
       };
 
-      // Debug: Log the data being sent (remove this in production)
-      console.log('Sending garden data:', JSON.stringify(gardenData, null, 2));
+
 
       const res = await fetch('/api/gardens', {
         method: 'POST',
@@ -169,13 +168,11 @@ function CreateGarden({ onGardenCreated }) {
 
       const data = await res.json();
 
-      // Debug: Log the response
-      console.log('Response status:', res.status);
-      console.log('Response data:', data);
+
 
       if (!res.ok) {
         const errorMessage = data.message || data.error || `HTTP ${res.status}: Failed to create garden`;
-        console.error('Garden creation failed:', data.message || data.error);
+
 
         // Handle authentication errors specifically
         if (res.status === 401 || (data.code && ['INVALID_TOKEN', 'TOKEN_EXPIRED', 'NO_TOKEN'].includes(data.code))) {
@@ -195,7 +192,7 @@ function CreateGarden({ onGardenCreated }) {
       try {
         await validateToken(); // This will refresh the user data
       } catch (refreshError) {
-        console.warn('Could not refresh user data:', refreshError);
+        // Silently handle refresh error
       }
 
       if (onGardenCreated) {

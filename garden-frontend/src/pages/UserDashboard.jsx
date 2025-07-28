@@ -7,7 +7,6 @@ import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import GardenCard from '../components/gardens/GardenCard';
-import TaskList from '../components/tasks/TaskList';
 import RecentActivity from '../components/dashboard/RecentActivity';
 import QuickActions from '../components/dashboard/QuickActions';
 import './UserDashboard.scss';
@@ -125,7 +124,11 @@ const UserDashboard = () => {
 
                 <div className="sidebar">
                   <RecentActivity />
-                  <TaskList limit={5} />
+                  <div className="tasks-preview">
+                    <h3>📋 Recent Tasks</h3>
+                    <p>Task management coming soon...</p>
+                    <Link to="/tasks" className="view-all-link">View All Tasks →</Link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -183,7 +186,16 @@ const UserDashboard = () => {
 
           {activeTab === 'tasks' && (
             <div className="tasks-tab">
-              <TaskList />
+              <div className="coming-soon">
+                <h3>📋 Task Management</h3>
+                <p>Task management features are coming soon! You'll be able to:</p>
+                <ul>
+                  <li>View assigned tasks</li>
+                  <li>Track task progress</li>
+                  <li>Mark tasks as complete</li>
+                  <li>Collaborate with other gardeners</li>
+                </ul>
+              </div>
             </div>
           )}
 

@@ -144,7 +144,19 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.methods.getRoleInGarden = function (gardenId) {
-  const garden = this.gardens.find(g => g.gardenId.toString() === gardenId.toString());
+  if (!gardenId || !this.gardens || !Array.isArray(this.gardens)) {
+    return null;
+  }
+
+  const garden = this.gardens.find(g => {
+    if (!g || !g.gardenId) return false;
+    try {
+      return g.gardenId.toString() === gardenId.toString();
+    } catch (error) {
+      return false;
+    }
+  });
+
   return garden ? garden.role : null;
 };
 

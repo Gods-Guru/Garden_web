@@ -31,6 +31,14 @@ import Footer from './components/common/Footer'
 import CreateGarden from './pages/Admin/CreateGarden'
 import GardenManagement from './pages/GardenManagement'
 import Gardens from './pages/Gardens'
+import Events from './pages/Events'
+import Tasks from './pages/Tasks'
+import Notifications from './pages/Notifications'
+import Manage from './pages/Manage'
+import Help from './pages/Help'
+import Contact from './pages/Contact'
+import AdminUsers from './pages/Admin/AdminUsers'
+import AdminGardens from './pages/Admin/AdminGardens'
 import Toast from './components/common/Toast'
 import ErrorBoundary from './components/common/ErrorBoundary'
 
@@ -84,6 +92,30 @@ export default function App() {
           </ProtectedRoute>
         } />
 
+        <Route path="/events" element={
+          <ProtectedRoute>
+            <Events />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/tasks" element={
+          <ProtectedRoute>
+            <Tasks />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/notifications" element={
+          <ProtectedRoute>
+            <Notifications />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/manage" element={
+          <ProtectedRoute roles={['admin', 'manager']}>
+            <Manage />
+          </ProtectedRoute>
+        } />
+
         <Route path="/payments" element={
           <ProtectedRoute>
             <Payments />
@@ -108,6 +140,9 @@ export default function App() {
           </ProtectedRoute>
         } />
 
+        <Route path="/help" element={<Help />} />
+        <Route path="/contact" element={<Contact />} />
+
         {/* Garden creation - any authenticated user */}
         <Route path="/gardens/create" element={
           <ProtectedRoute>
@@ -125,6 +160,18 @@ export default function App() {
         <Route path="/admin/users" element={
           <ProtectedRoute roles={['admin']}>
             <UserManagement />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/users" element={
+          <ProtectedRoute roles={['admin']}>
+            <AdminUsers />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/gardens" element={
+          <ProtectedRoute roles={['admin']}>
+            <AdminGardens />
           </ProtectedRoute>
         } />
 

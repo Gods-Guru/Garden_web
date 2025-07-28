@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import useAuthStore from '../../store/useAuthStore';
 import './SecondAdminGardens.scss';
 
 function SecondAdminGardens() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [gardens, setGardens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

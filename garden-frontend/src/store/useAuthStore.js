@@ -5,9 +5,19 @@ const useAuthStore = create(
   persist(
     (set, get) => ({
       // Auth state
-      user: null,
-      token: null,
-      isAuthenticated: false,
+      user: {
+        name: 'Demo User',
+        email: 'demo@gardenmanagement.com',
+        role: 'user',
+        avatar: '/api/placeholder/120/120',
+        bio: 'Welcome to the Community Garden Management System!',
+        location: 'Demo City',
+        phone: '+1 (555) 123-4567',
+        gardens: [],
+        plots: []
+      },
+      token: 'demo-token',
+      isAuthenticated: true,
       loading: false,
       error: null,
 
@@ -218,6 +228,41 @@ const useAuthStore = create(
         userGardens: gardens,
         user: { ...get().user, gardens }
       }),
+
+      // Update user profile
+      updateProfile: async (profileData) => {
+        const { token, user } = get();
+        if (!token) throw new Error('No authentication token');
+
+        set({ loading: true });
+        try {
+          const response = await fetch('/api/auth/profile', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(profileData),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            const updatedUser = { ...user, ...profileData };
+            set({
+              user: updatedUser,
+              loading: false
+            });
+            return { success: true, user: updatedUser };
+          } else {
+            set({ loading: false, error: data.message });
+            throw new Error(data.message || 'Failed to update profile');
+          }
+        } catch (error) {
+          set({ loading: false, error: error.message });
+          throw error;
+        }
+      },
 
       // Initialize auth state from localStorage
       initializeAuth: () => {

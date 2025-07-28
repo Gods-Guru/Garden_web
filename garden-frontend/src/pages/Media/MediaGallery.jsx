@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import useAuthStore from '../../store/useAuthStore';
 import { useDropzone } from 'react-dropzone';
 import './MediaGallery.scss';
 
 function MediaGallery() {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [media, setMedia] = useState([]);
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [loading, setLoading] = useState(true);

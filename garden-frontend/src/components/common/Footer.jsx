@@ -54,18 +54,18 @@ export default function Footer() {
 
             <div className="link-group">
               <h4>Resources</h4>
-              <a href="#guides">Garden Guides</a>
-              <a href="#blog">Blog</a>
-              <a href="#help">Help Center</a>
-              <a href="#api">API Docs</a>
+              <Link to="/help">Garden Guides</Link>
+              <Link to="/community">Blog</Link>
+              <Link to="/help">Help Center</Link>
+              <Link to="/help">API Docs</Link>
             </div>
 
             <div className="link-group">
               <h4>Company</h4>
               <Link to="/about">About Us</Link>
-              <a href="#careers">Careers</a>
-              <a href="#press">Press Kit</a>
-              <a href="#contact">Contact</a>
+              <Link to="/contact">Careers</Link>
+              <Link to="/contact">Press Kit</Link>
+              <Link to="/contact">Contact</Link>
             </div>
 
             <div className="link-group">
