@@ -249,6 +249,23 @@ const createTask = catchAsync(async (req, res, next) => {
     { path: 'plot', select: 'plotNumber name' }
   ]);
 
+  // Log activity
+  await ActivityLogger.logTaskActivity(
+    req.user,
+    { _id: gardenId },
+    task,
+    ActivityLogger.ACTIONS.TASK_CREATED,
+    {
+      taskType: task.type,
+      dueDate: task.dueDate,
+      priority: task.priority,
+      assignedTo: task.assignedTo.map(a => ({
+        id: a.user._id,
+        name: a.user.name
+      }))
+    }
+  );
+
   res.status(201).json({
     success: true,
     message: 'Task created successfully',
@@ -439,6 +456,20 @@ const completeTask = catchAsync(async (req, res, next) => {
     { path: 'completedBy', select: 'name email avatar' },
     { path: 'assignedTo.user', select: 'name email avatar' }
   ]);
+
+  // Log activity
+  await ActivityLogger.logTaskActivity(
+    req.user,
+    { _id: task.garden },
+    task,
+    ActivityLogger.ACTIONS.TASK_COMPLETED,
+    {
+      completedAt: new Date(),
+      completionNotes,
+      actualDuration,
+      images: images?.length || 0
+    }
+  );
 
   res.status(200).json({
     success: true,

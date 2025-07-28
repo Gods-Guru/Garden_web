@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Task = require('../models/Task');
 const { catchAsync } = require('../middleware/errorHandler');
 const { AppError } = require('../middleware/errorHandler');
+const ActivityLogger = require('../services/ActivityLogger');
 
 // Get all plots in a garden (role-based filtering)
 const getPlots = catchAsync(async (req, res, next) => {
@@ -165,6 +166,18 @@ const createPlot = catchAsync(async (req, res, next) => {
   plot.addHistoryEntry('created', 'Plot created', req.user._id, 'Initial plot setup');
   await plot.save();
 
+  // Log activity
+  await ActivityLogger.logPlotActivity(
+    req.user,
+    { _id: gardenId },
+    plot,
+    ActivityLogger.ACTIONS.PLOT_CREATED,
+    {
+      plotNumber: plot.plotNumber,
+      size: plot.dimensions
+    }
+  );
+
   res.status(201).json({
     success: true,
     message: 'Plot created successfully',
@@ -221,6 +234,21 @@ const updatePlot = catchAsync(async (req, res, next) => {
   );
   await updatedPlot.save();
 
+  // Log activity
+  await ActivityLogger.logPlotActivity(
+    req.user,
+    { _id: gardenId },
+    updatedPlot,
+    ActivityLogger.ACTIONS.PLOT_STATUS_CHANGED,
+    {
+      updatedFields: Object.keys(updateData),
+      updatedBy: {
+        role: userRole,
+        name: req.user.name
+      }
+    }
+  );
+
   res.status(200).json({
     success: true,
     message: 'Plot updated successfully',
@@ -274,6 +302,19 @@ const assignPlot = catchAsync(async (req, res, next) => {
   await Garden.findByIdAndUpdate(gardenId, {
     $inc: { 'stats.occupiedPlots': 1 }
   });
+
+  // Log activity
+  await ActivityLogger.logPlotActivity(
+    req.user,
+    { _id: gardenId },
+    plot,
+    ActivityLogger.ACTIONS.PLOT_ASSIGNED,
+    {
+      assignedTo: user.name,
+      assignedToId: user._id,
+      assignmentDate: plot.assignedAt
+    }
+  );
 
   res.status(200).json({
     success: true,

@@ -1,6 +1,7 @@
 // Import variables and mixins
 @use 'variables' as *;
 @use 'mixins' as *;
+@use 'pages/user-dashboard';
 
 // Global styles
 * {

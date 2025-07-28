@@ -1,0 +1,286 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.admin-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: $background;
+
+  .admin-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .admin-content {
+    padding: 2rem;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+
+    .grid-item {
+      background: $text-light;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+
+      h2 {
+        font-size: 1.25rem;
+        color: $text-dark;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+    }
+  }
+}
+
+// AdminSidebar styles
+.admin-sidebar {
+  width: 280px;
+  background: $primary-green;
+  min-height: 100vh;
+  transition: width 0.3s ease;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  &.closed {
+    width: 80px;
+
+    .label {
+      display: none;
+    }
+  }
+
+  .sidebar-header {
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    background: darken($primary-green, 5%);
+    color: $text-light;
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .toggle-btn {
+      background: none;
+      border: none;
+      color: $text-light;
+      cursor: pointer;
+      font-size: 1.25rem;
+    }
+  }
+
+  .sidebar-nav {
+    padding: 1.5rem 0;
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 0.875rem 1.5rem;
+      color: rgba($text-light, 0.9);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      gap: 1rem;
+
+      &:hover {
+        background: rgba($text-light, 0.1);
+      }
+
+      &.active {
+        background: $secondary-green;
+        color: $text-light;
+      }
+
+      .icon {
+        font-size: 1.25rem;
+        min-width: 24px;
+      }
+    }
+  }
+}
+
+// AdminHeader styles
+.admin-header {
+  height: 70px;
+  background: $text-light;
+  border-bottom: 1px solid rgba($text-dark, 0.1);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .menu-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: $text-dark;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: $text-dark;
+    }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba($text-dark, 0.05);
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+
+      input {
+        border: none;
+        background: none;
+        outline: none;
+        width: 200px;
+      }
+
+      button {
+        background: none;
+        border: none;
+        cursor: pointer;
+      }
+    }
+
+    .notifications {
+      position: relative;
+
+      .notification-btn {
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        cursor: pointer;
+      }
+
+      .badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: $accent-yellow;
+        color: $text-dark;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    .admin-profile {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .profile-info {
+        display: flex;
+        flex-direction: column;
+
+        .name {
+          font-weight: 500;
+          color: $text-dark;
+        }
+
+        .role {
+          font-size: 0.875rem;
+          color: rgba($text-dark, 0.7);
+        }
+      }
+    }
+  }
+}
+
+// AdminStats styles
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  .stat-card {
+    background: $text-light;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .stat-icon {
+      font-size: 2rem;
+      color: $primary-green;
+      background: rgba($primary-green, 0.1);
+      width: 50px;
+      height: 50px;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-info {
+      flex: 1;
+
+      .stat-value {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: $text-dark;
+        margin: 0;
+      }
+
+      .stat-label {
+        color: rgba($text-dark, 0.7);
+        font-size: 0.875rem;
+        margin: 0.25rem 0;
+      }
+
+      .stat-trend {
+        font-size: 0.875rem;
+        font-weight: 500;
+
+        &.positive {
+          color: $secondary-green;
+        }
+
+        &.negative {
+          color: #dc3545;
+        }
+      }
+    }
+  }
+}

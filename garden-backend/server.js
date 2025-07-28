@@ -127,7 +127,7 @@ app.use(helmet({
 // Enhanced Rate Limiting with different tiers
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200, // Increased for general API usage
+  max: 300, // Increased for general API usage
   message: {
     success: false,
     error: 'Too many requests from this IP. Please try again later.',
@@ -143,7 +143,7 @@ const generalLimiter = rateLimit({
 
 const strictLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Strict limit for sensitive operations
+  max: 20, // Strict limit for sensitive operations
   message: {
     success: false,
     error: 'Too many sensitive requests. Please try again later.',

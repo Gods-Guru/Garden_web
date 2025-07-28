@@ -4,7 +4,11 @@ import useAuthStore from '../store/useAuthStore';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import QuickActions from '../components/dashboard/QuickActions';
+import GardenCard from '../components/gardens/GardenCard'; // Add this import
+import RecentActivity from '../components/dashboard/RecentActivity'; // Add this import
 import './UserDashboard.scss';
+
 
 const UserDashboard = () => {
   const { user, token } = useAuthStore();
@@ -208,8 +212,8 @@ const UserDashboard = () => {
                       <div className="gardens-grid">
                         {gardens.slice(0, 4).map(garden => (
                           <GardenCard
-                            key={garden.garden._id}
-                            garden={garden.garden}
+                            key={garden._id}
+                            garden={garden}
                             userRole={garden.role}
                           />
                         ))}
@@ -307,8 +311,8 @@ const UserDashboard = () => {
                   <div className="gardens-grid">
                     {ownedGardens.map(garden => (
                       <GardenCard
-                        key={garden.garden._id}
-                        garden={garden.garden}
+                        key={garden._id}
+                        garden={garden}
                         userRole={garden.role}
                         showManageButton={true}
                       />
@@ -323,8 +327,8 @@ const UserDashboard = () => {
                   <div className="gardens-grid">
                     {memberGardens.map(garden => (
                       <GardenCard
-                        key={garden.garden._id}
-                        garden={garden.garden}
+                        key={garden._id}
+                        garden={garden}
                         userRole={garden.role}
                       />
                     ))}
