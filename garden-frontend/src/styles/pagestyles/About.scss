@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // About Page Variables
 $about-primary: #2e7d32;
 $about-primary-dark: #1b5e20;
@@ -299,7 +301,7 @@ $about-border-radius-lg: 24px;
 
       .value-icon {
         font-size: 2.5rem;
-        background: linear-gradient(135deg, $about-accent, lighten($about-accent, 10%));
+        background: linear-gradient(135deg, $about-accent, color.adjust($about-accent, $lightness: 10%));
         width: 60px;
         height: 60px;
         border-radius: 50%;

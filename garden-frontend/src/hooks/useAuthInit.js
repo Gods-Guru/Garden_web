@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import useAuthStore from '../store/useAuthStore';
 
 export const useAuthInit = () => {
   const { initializeAuth, refreshUser, token } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -23,11 +24,15 @@ export const useAuthInit = () => {
         // Clear invalid token if refresh fails
         localStorage.removeItem('token');
         useAuthStore.getState().logout();
+      } finally {
+        setIsLoading(false);
       }
     };
 
     initAuth();
   }, []); // Empty dependency array to run only once
+
+  return { isLoading };
 };
 
 export default useAuthInit;
