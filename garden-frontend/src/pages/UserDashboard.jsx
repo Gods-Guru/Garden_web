@@ -1,37 +1,128 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useAuthStore from '../store/useAuthStore';
-import useGardenStore from '../store/useGardenStore';
-import useNotificationStore from '../store/useNotificationStore';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import LoadingSpinner from '../components/common/LoadingSpinner';
-import GardenCard from '../components/gardens/GardenCard';
-import RecentActivity from '../components/dashboard/RecentActivity';
-import QuickActions from '../components/dashboard/QuickActions';
 import './UserDashboard.scss';
 
 const UserDashboard = () => {
-  const { user } = useAuthStore();
-  const { gardens, loading: gardensLoading, fetchMyGardens } = useGardenStore();
-  const { notifications, unreadCount, fetchNotifications } = useNotificationStore();
+  const { user, token } = useAuthStore();
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
 
-  useEffect(() => {
-    fetchMyGardens();
-    fetchNotifications();
-  }, [fetchMyGardens, fetchNotifications]);
+  // Fetch comprehensive dashboard data from backend
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/dashboard', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-  if (gardensLoading) {
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard data');
+      }
+
+      const data = await response.json();
+      setDashboardData(data.data);
+    } catch (err) {
+      console.error('Dashboard fetch error:', err);
+      setError(err.message);
+      // Set demo data as fallback
+      setDashboardData({
+        user: user,
+        gardens: [],
+        tasks: [],
+        events: [],
+        plots: [],
+        notifications: [],
+        stats: {
+          totalGardens: 0,
+          totalPlots: 0,
+          pendingTasks: 0,
+          inProgressTasks: 0,
+          upcomingEvents: 0,
+          unreadNotifications: 0
+        },
+        recentActivity: []
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user && token) {
+      fetchDashboardData();
+    }
+  }, [user, token]);
+
+  // Task management functions
+  const updateTaskStatus = async (taskId, newStatus) => {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (response.ok) {
+        // Refresh dashboard data
+        fetchDashboardData();
+      }
+    } catch (err) {
+      console.error('Failed to update task:', err);
+    }
+  };
+
+  const markNotificationAsRead = async (notificationId) => {
+    try {
+      await fetch(`/api/notifications/${notificationId}/read`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      fetchDashboardData();
+    } catch (err) {
+      console.error('Failed to mark notification as read:', err);
+    }
+  };
+
+  if (loading) {
     return <LoadingSpinner message="Loading your dashboard..." />;
   }
 
-  const ownedGardens = gardens.filter(g =>
-    g.role === 'owner' || g.role === 'admin'
-  );
-  const memberGardens = gardens.filter(g =>
-    g.role === 'member' || g.role === 'coordinator'
-  );
+  if (error && !dashboardData) {
+    return (
+      <div className="user-dashboard">
+        <Navbar />
+        <div className="error-container">
+          <h2>Unable to load dashboard</h2>
+          <p>{error}</p>
+          <button onClick={fetchDashboardData} className="retry-btn">
+            Try Again
+          </button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const { gardens = [], tasks = [], events = [], plots = [], notifications = [], stats = {}, recentActivity = [] } = dashboardData || {};
+
+  // Calculate owned and member gardens for display
+  const ownedGardens = gardens.filter(g => g.role === 'owner' || g.role === 'admin');
+  const memberGardens = gardens.filter(g => g.role === 'member' || g.role === 'coordinator');
 
   return (
     <div className="user-dashboard">
@@ -46,15 +137,19 @@ const UserDashboard = () => {
 
           <div className="header-stats">
             <div className="stat-card">
-              <span className="stat-number">{gardens.length}</span>
+              <span className="stat-number">{stats.totalGardens || 0}</span>
               <span className="stat-label">Gardens</span>
             </div>
             <div className="stat-card">
-              <span className="stat-number">{ownedGardens.length}</span>
-              <span className="stat-label">Owned</span>
+              <span className="stat-number">{stats.totalPlots || 0}</span>
+              <span className="stat-label">Plots</span>
             </div>
             <div className="stat-card">
-              <span className="stat-number">{unreadCount}</span>
+              <span className="stat-number">{stats.pendingTasks || 0}</span>
+              <span className="stat-label">Pending Tasks</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-number">{stats.unreadNotifications || 0}</span>
               <span className="stat-label">Notifications</span>
             </div>
           </div>
@@ -68,22 +163,28 @@ const UserDashboard = () => {
             Overview
           </button>
           <button
-            className={`tab ${activeTab === 'gardens' ? 'active' : ''}`}
-            onClick={() => setActiveTab('gardens')}
-          >
-            My Gardens
-          </button>
-          <button
             className={`tab ${activeTab === 'tasks' ? 'active' : ''}`}
             onClick={() => setActiveTab('tasks')}
           >
-            Tasks
+            My Tasks ({tasks.length})
           </button>
           <button
-            className={`tab ${activeTab === 'activity' ? 'active' : ''}`}
-            onClick={() => setActiveTab('activity')}
+            className={`tab ${activeTab === 'gardens' ? 'active' : ''}`}
+            onClick={() => setActiveTab('gardens')}
           >
-            Activity
+            My Gardens ({gardens.length})
+          </button>
+          <button
+            className={`tab ${activeTab === 'events' ? 'active' : ''}`}
+            onClick={() => setActiveTab('events')}
+          >
+            Events ({events.length})
+          </button>
+          <button
+            className={`tab ${activeTab === 'notifications' ? 'active' : ''}`}
+            onClick={() => setActiveTab('notifications')}
+          >
+            Notifications ({notifications.length})
           </button>
         </div>
 
@@ -130,6 +231,70 @@ const UserDashboard = () => {
                     <Link to="/tasks" className="view-all-link">View All Tasks →</Link>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'tasks' && (
+            <div className="tasks-tab">
+              <div className="tasks-header">
+                <h2>My Tasks</h2>
+                <div className="task-filters">
+                  <button className="filter-btn active">All</button>
+                  <button className="filter-btn">Pending</button>
+                  <button className="filter-btn">In Progress</button>
+                  <button className="filter-btn">Completed</button>
+                </div>
+              </div>
+
+              <div className="tasks-grid">
+                {tasks.length === 0 ? (
+                  <div className="empty-state">
+                    <p>No tasks assigned yet.</p>
+                  </div>
+                ) : (
+                  tasks.map(task => (
+                    <div key={task._id} className="task-card">
+                      <div className="task-header">
+                        <h3>{task.title}</h3>
+                        <span className={`task-priority ${task.priority}`}>
+                          {task.priority}
+                        </span>
+                      </div>
+                      <p className="task-description">{task.description}</p>
+                      <div className="task-meta">
+                        <span className="task-garden">🌱 {task.garden?.name}</span>
+                        {task.plot && <span className="task-plot">📍 {task.plot.name}</span>}
+                        <span className="task-due">
+                          📅 {new Date(task.dueDate).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="task-footer">
+                        <span className={`task-status ${task.status}`}>
+                          {task.status.replace('-', ' ')}
+                        </span>
+                        <div className="task-actions">
+                          {task.status === 'pending' && (
+                            <button
+                              onClick={() => updateTaskStatus(task._id, 'in-progress')}
+                              className="btn btn-sm btn-primary"
+                            >
+                              Start Task
+                            </button>
+                          )}
+                          {task.status === 'in-progress' && (
+                            <button
+                              onClick={() => updateTaskStatus(task._id, 'completed')}
+                              className="btn btn-sm btn-success"
+                            >
+                              Mark Complete
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -184,24 +349,63 @@ const UserDashboard = () => {
             </div>
           )}
 
-          {activeTab === 'tasks' && (
-            <div className="tasks-tab">
-              <div className="coming-soon">
-                <h3>📋 Task Management</h3>
-                <p>Task management features are coming soon! You'll be able to:</p>
-                <ul>
-                  <li>View assigned tasks</li>
-                  <li>Track task progress</li>
-                  <li>Mark tasks as complete</li>
-                  <li>Collaborate with other gardeners</li>
-                </ul>
+          {activeTab === 'events' && (
+            <div className="events-tab">
+              <h2>Upcoming Events</h2>
+              <div className="events-grid">
+                {events.length === 0 ? (
+                  <div className="empty-state">
+                    <p>No upcoming events.</p>
+                  </div>
+                ) : (
+                  events.map(event => (
+                    <div key={event._id} className="event-card">
+                      <h3>{event.title}</h3>
+                      <p>{event.description}</p>
+                      <div className="event-meta">
+                        <span>📅 {new Date(event.startDate).toLocaleDateString()}</span>
+                        <span>🌱 {event.garden?.name}</span>
+                      </div>
+                      <Link to={`/events/${event._id}`} className="btn btn-primary">
+                        View Event
+                      </Link>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
 
-          {activeTab === 'activity' && (
-            <div className="activity-tab">
-              <RecentActivity expanded={true} />
+          {activeTab === 'notifications' && (
+            <div className="notifications-tab">
+              <h2>Notifications</h2>
+              <div className="notifications-list">
+                {notifications.length === 0 ? (
+                  <div className="empty-state">
+                    <p>No notifications.</p>
+                  </div>
+                ) : (
+                  notifications.map(notification => (
+                    <div key={notification._id} className="notification-item">
+                      <div className="notification-content">
+                        <h4>{notification.title}</h4>
+                        <p>{notification.message}</p>
+                        <span className="notification-time">
+                          {new Date(notification.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      {!notification.read && (
+                        <button
+                          onClick={() => markNotificationAsRead(notification._id)}
+                          className="btn btn-sm btn-secondary"
+                        >
+                          Mark as Read
+                        </button>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           )}
         </div>

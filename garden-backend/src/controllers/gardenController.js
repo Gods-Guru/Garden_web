@@ -599,6 +599,198 @@ const getNearbyGardens = catchAsync(async (req, res, next) => {
   res.json({ success: true, data: gardens });
 });
 
+// Admin member management functions
+const inviteMember = catchAsync(async (req, res, next) => {
+  const { gardenId } = req.params;
+  const { email, role = 'member' } = req.body;
+
+  const garden = await Garden.findById(gardenId);
+  if (!garden) {
+    return next(new AppError('Garden not found', 404));
+  }
+
+  // Check if user is garden owner or admin
+  const userRole = req.user.gardens?.find(g => g.gardenId.toString() === gardenId)?.role;
+  if (req.user.role !== 'admin' && userRole !== 'owner') {
+    return next(new AppError('Only garden owners and admins can invite members', 403));
+  }
+
+  // Find user by email
+  const invitedUser = await User.findOne({ email });
+  if (!invitedUser) {
+    return next(new AppError('User not found with this email', 404));
+  }
+
+  // Check if user is already a member
+  const existingMember = invitedUser.gardens.find(g => g.gardenId.toString() === gardenId);
+  if (existingMember) {
+    return next(new AppError('User is already a member of this garden', 400));
+  }
+
+  // Add user to garden
+  invitedUser.gardens.push({
+    gardenId: gardenId,
+    role: role,
+    status: 'active',
+    joinedAt: new Date()
+  });
+  await invitedUser.save();
+
+  // Add member to garden
+  garden.members.push({
+    user: invitedUser._id,
+    role: role,
+    status: 'active',
+    joinedAt: new Date()
+  });
+  await garden.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Member invited successfully',
+    data: {
+      member: {
+        id: invitedUser._id,
+        name: invitedUser.name,
+        email: invitedUser.email,
+        role: role
+      }
+    }
+  });
+});
+
+const promoteUser = catchAsync(async (req, res, next) => {
+  const { gardenId, userId } = req.params;
+  const { newRole } = req.body;
+
+  const garden = await Garden.findById(gardenId);
+  if (!garden) {
+    return next(new AppError('Garden not found', 404));
+  }
+
+  // Check permissions
+  const userRole = req.user.gardens?.find(g => g.gardenId.toString() === gardenId)?.role;
+  if (req.user.role !== 'admin' && userRole !== 'owner') {
+    return next(new AppError('Only garden owners and admins can promote users', 403));
+  }
+
+  // Update user's role in garden
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  const userGarden = user.gardens.find(g => g.gardenId.toString() === gardenId);
+  if (!userGarden) {
+    return next(new AppError('User is not a member of this garden', 400));
+  }
+
+  userGarden.role = newRole;
+  await user.save();
+
+  // Update garden member role
+  const gardenMember = garden.members.find(m => m.user.toString() === userId);
+  if (gardenMember) {
+    gardenMember.role = newRole;
+    await garden.save();
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'User role updated successfully',
+    data: {
+      userId,
+      newRole
+    }
+  });
+});
+
+const blockUser = catchAsync(async (req, res, next) => {
+  const { gardenId, userId } = req.params;
+  const { reason } = req.body;
+
+  const garden = await Garden.findById(gardenId);
+  if (!garden) {
+    return next(new AppError('Garden not found', 404));
+  }
+
+  // Check permissions
+  const userRole = req.user.gardens?.find(g => g.gardenId.toString() === gardenId)?.role;
+  if (req.user.role !== 'admin' && userRole !== 'owner') {
+    return next(new AppError('Only garden owners and admins can block users', 403));
+  }
+
+  // Update user status
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new AppError('User not found', 404));
+  }
+
+  const userGarden = user.gardens.find(g => g.gardenId.toString() === gardenId);
+  if (!userGarden) {
+    return next(new AppError('User is not a member of this garden', 400));
+  }
+
+  userGarden.status = 'blocked';
+  await user.save();
+
+  // Update garden member status
+  const gardenMember = garden.members.find(m => m.user.toString() === userId);
+  if (gardenMember) {
+    gardenMember.status = 'blocked';
+    gardenMember.blockedAt = new Date();
+    gardenMember.blockReason = reason;
+    await garden.save();
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'User blocked successfully'
+  });
+});
+
+const generateInviteLink = catchAsync(async (req, res, next) => {
+  const { gardenId } = req.params;
+  const { expiresIn = 7 } = req.body; // days
+
+  const garden = await Garden.findById(gardenId);
+  if (!garden) {
+    return next(new AppError('Garden not found', 404));
+  }
+
+  // Check permissions
+  const userRole = req.user.gardens?.find(g => g.gardenId.toString() === gardenId)?.role;
+  if (req.user.role !== 'admin' && userRole !== 'owner' && userRole !== 'coordinator') {
+    return next(new AppError('Insufficient permissions to generate invite links', 403));
+  }
+
+  // Generate unique invite token
+  const crypto = require('crypto');
+  const inviteToken = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + expiresIn * 24 * 60 * 60 * 1000);
+
+  // Store invite in garden
+  if (!garden.invites) garden.invites = [];
+  garden.invites.push({
+    token: inviteToken,
+    createdBy: req.user.id,
+    expiresAt,
+    used: false
+  });
+  await garden.save();
+
+  const inviteLink = `${process.env.FRONTEND_URL}/join-garden/${inviteToken}`;
+
+  res.status(200).json({
+    success: true,
+    data: {
+      inviteLink,
+      token: inviteToken,
+      expiresAt
+    }
+  });
+});
+
 module.exports = {
   getAllGardens,
   getMyGardens,
@@ -612,5 +804,10 @@ module.exports = {
   updateMemberRole,
   manageMembership,
   getGardenStats,
-  getNearbyGardens
+  getNearbyGardens,
+  // New admin functions
+  inviteMember,
+  promoteUser,
+  blockUser,
+  generateInviteLink
 };

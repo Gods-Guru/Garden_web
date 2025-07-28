@@ -251,4 +251,10 @@ router.put('/:gardenId/members/:userId/role', requireGardenAdmin, gardenControll
 router.post('/:gardenId/members/:userId/manage', requireGardenAdmin, gardenController.manageMembership);
 router.get('/:gardenId/stats', requireGardenMember, gardenController.getGardenStats);
 
+// Admin member management routes
+router.post('/:gardenId/invite', requireGardenAdmin, gardenController.inviteMember);
+router.put('/:gardenId/members/:userId/promote', requireGardenAdmin, gardenController.promoteUser);
+router.post('/:gardenId/members/:userId/block', requireGardenAdmin, gardenController.blockUser);
+router.post('/:gardenId/invite-link', requireGardenAdmin, gardenController.generateInviteLink);
+
 module.exports = router;

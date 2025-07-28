@@ -79,6 +79,8 @@ try {
 
   const postRoutes = require('./src/routes/postRoutes');
   const communityStatsRoutes = require('./src/routes/communityStats');
+  const dashboardRoutes = require('./src/routes/dashboardRoutes');
+  const chatRoutes = require('./src/routes/chatRoutes');
 
   console.log('✅ All route modules loaded');
 
@@ -202,6 +204,8 @@ app.use('/api/qrcodes', qrCodeRoutes);
 
 app.use('/api/posts', postRoutes);
 app.use('/api/community', communityStatsRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

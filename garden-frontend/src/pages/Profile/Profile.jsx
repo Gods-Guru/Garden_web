@@ -1,162 +1,324 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import Navbar from '../../components/common/Navbar';
+import Footer from '../../components/common/Footer';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 import useAuthStore from '../../store/useAuthStore';
 import './Profile.scss';
 
-function Profile() {
-  const { user } = useAuthStore();
-  const [profile, setProfile] = useState({
+const Profile = () => {
+  const { user, isAuthenticated, updateProfile } = useAuthStore();
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
-    avatar: '',
     bio: '',
     location: '',
-    phone: '',
-    gardensJoined: [],
-    plotsManaged: []
+    phone: ''
   });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (user) {
-      setProfile({
+      setFormData({
         name: user.name || '',
         email: user.email || '',
-        avatar: user.avatar || '',
         bio: user.bio || '',
-        location: user.location || '',
-        phone: user.phone || '',
-        gardensJoined: user.gardens || [],
-        plotsManaged: user.plots || []
+        location: typeof user.location === 'string' ? user.location :
+                 user.location?.name || user.location?.city || '',
+        phone: user.phone || ''
       });
-      setLoading(false);
     }
   }, [user]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    
-    // In a real app, this would update the user in the auth store
-    setIsEditing(false);
-    console.log('Profile updated:', profile);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  if (loading) {
-    return <div className="profile-loading">Loading profile...</div>;
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      await updateProfile(formData);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      name: user.name || '',
+      email: user.email || '',
+      bio: user.bio || '',
+      location: user.location || '',
+      phone: user.phone || ''
+    });
+    setIsEditing(false);
+  };
+
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="profilePage">
+        <Navbar />
+        <div className="profileUnauthorized">
+          <h2>Please log in to view your profile</h2>
+          <Link to="/login" className="profileLoginButton">
+            Go to Login
+          </Link>
+        </div>
+        <Footer />
+      </div>
+    );
   }
 
-  if (error) {
-    return <div className="profile-error">Error: {error}</div>;
-  }
+  // Ensure all user properties are safe to render
+  const safeUser = {
+    ...user,
+    name: String(user.name || ''),
+    email: String(user.email || ''),
+    bio: String(user.bio || ''),
+    location: typeof user.location === 'string' ? user.location :
+              user.location?.name || user.location?.city || 'Not provided',
+    phone: String(user.phone || ''),
+    role: String(user.role || 'user')
+  };
 
   return (
-    <div className="profile-container">
-      <div className="profile-header">
-        <div className="profile-avatar">
-          <img src={profile.avatar || '/default-avatar.png'} alt={profile.name} />
+    <div className="profilePage">
+      <Navbar />
+
+      <div className="profileContainer">
+        {/* Header */}
+        <div className="profileHeader">
+          <div className="profileAvatarContainer">
+            <div className="profileAvatarWrapper">
+              <img
+                src={safeUser.avatar || '/default-avatar.jpg'}
+                alt={safeUser.name}
+                className="profileAvatarImage"
+              />
+              {isEditing && (
+                <button className="profileAvatarEditButton">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2"/>
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+          
+          <div className="profileInfo">
+            <h1 className="profileName">{safeUser.name}</h1>
+            <p className="profileRole">{safeUser.role}</p>
+            <p className="profileEmail">{safeUser.email}</p>
+          </div>
+          
+          <div className="profileActions">
+            {!isEditing ? (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="profileEditButton"
+              >
+                Edit Profile
+              </button>
+            ) : (
+              <div className="profileEditActions">
+                <button
+                  onClick={handleSave}
+                  disabled={loading}
+                  className="profileSaveButton"
+                >
+                  {loading ? <LoadingSpinner size="small" /> : 'Save Changes'}
+                </button>
+                <button
+                  onClick={handleCancel}
+                  className="profileCancelButton"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="profile-title">
-          <h1>{profile.name}</h1>
-          <p className="profile-email">{profile.email}</p>
+
+        {/* Profile Content */}
+        <div className="profileContent">
+          <div className="profileDetailsSection">
+            <h2 className="profileSectionTitle">Profile Details</h2>
+
+            {isEditing ? (
+              <div className="profileForm">
+                <div className="profileFormGroup">
+                  <label htmlFor="name" className="profileFormLabel">Full Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className="profileFormInput"
+                    placeholder="Enter your full name"
+                  />
+                </div>
+
+                <div className="profileFormGroup">
+                  <label htmlFor="email" className="profileFormLabel">Email Address</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="profileFormInput"
+                    placeholder="Enter your email"
+                  />
+                </div>
+
+                <div className="profileFormGroup">
+                  <label htmlFor="phone" className="profileFormLabel">Phone Number</label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="profileFormInput"
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+
+                <div className="profileFormGroup">
+                  <label htmlFor="location" className="profileFormLabel">Location</label>
+                  <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    className="profileFormInput"
+                    placeholder="Enter your location"
+                  />
+                </div>
+
+                <div className="profileFormGroup">
+                  <label htmlFor="bio" className="profileFormLabel">Bio</label>
+                  <textarea
+                    id="bio"
+                    name="bio"
+                    value={formData.bio}
+                    onChange={handleInputChange}
+                    className="profileFormTextarea"
+                    placeholder="Tell us about yourself..."
+                    rows="4"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="profileDetailsDisplay">
+                <div className="profileDetailItem">
+                  <span className="profileDetailLabel">Full Name:</span>
+                  <span className="profileDetailValue">{safeUser.name || 'Not provided'}</span>
+                </div>
+                <div className="profileDetailItem">
+                  <span className="profileDetailLabel">Email:</span>
+                  <span className="profileDetailValue">{safeUser.email}</span>
+                </div>
+                <div className="profileDetailItem">
+                  <span className="profileDetailLabel">Phone:</span>
+                  <span className="profileDetailValue">{safeUser.phone || 'Not provided'}</span>
+                </div>
+                <div className="profileDetailItem">
+                  <span className="profileDetailLabel">Location:</span>
+                  <span className="profileDetailValue">{safeUser.location}</span>
+                </div>
+                <div className="profileDetailItem">
+                  <span className="profileDetailLabel">Role:</span>
+                  <span className={`profileRoleBadge profileRoleBadge--${safeUser.role}`}>
+                    {safeUser.role}
+                  </span>
+                </div>
+                <div className="profileDetailItem">
+                  <span className="profileDetailLabel">Member Since:</span>
+                  <span className="profileDetailValue">
+                    {new Date(safeUser.createdAt || Date.now()).toLocaleDateString()}
+                  </span>
+                </div>
+                {safeUser.bio && (
+                  <div className="profileDetailItem profileBioItem">
+                    <span className="profileDetailLabel">Bio:</span>
+                    <p className="profileBioText">{safeUser.bio}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Activity Section */}
+          <div className="profileActivitySection">
+            <h2 className="profileSectionTitle">My Activity</h2>
+            <div className="profileStatsGrid">
+              <div className="profileStatCard">
+                <div className="profileStatNumber">{safeUser.gardens?.length || 0}</div>
+                <div className="profileStatLabel">Gardens Joined</div>
+              </div>
+              <div className="profileStatCard">
+                <div className="profileStatNumber">{safeUser.plots?.length || 0}</div>
+                <div className="profileStatLabel">Plots Assigned</div>
+              </div>
+              <div className="profileStatCard">
+                <div className="profileStatNumber">{safeUser.tasksCompleted || 0}</div>
+                <div className="profileStatLabel">Tasks Completed</div>
+              </div>
+              <div className="profileStatCard">
+                <div className="profileStatNumber">{safeUser.eventsAttended || 0}</div>
+                <div className="profileStatLabel">Events Attended</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Links */}
+          <div className="profileQuickLinksSection">
+            <h2 className="profileSectionTitle">Quick Links</h2>
+            <div className="profileQuickLinksGrid">
+              <Link to="/gardens" className="profileQuickLink">
+                <span className="profileQuickLinkIcon">🌱</span>
+                <span className="profileQuickLinkText">My Gardens</span>
+              </Link>
+              <Link to="/plots" className="profileQuickLink">
+                <span className="profileQuickLinkIcon">🏡</span>
+                <span className="profileQuickLinkText">My Plots</span>
+              </Link>
+              <Link to="/tasks" className="profileQuickLink">
+                <span className="profileQuickLinkIcon">📋</span>
+                <span className="profileQuickLinkText">My Tasks</span>
+              </Link>
+              <Link to="/events" className="profileQuickLink">
+                <span className="profileQuickLinkIcon">📅</span>
+                <span className="profileQuickLinkText">My Events</span>
+              </Link>
+              <Link to="/settings" className="profileQuickLink">
+                <span className="profileQuickLinkIcon">⚙️</span>
+                <span className="profileQuickLinkText">Settings</span>
+              </Link>
+              <Link to="/help" className="profileQuickLink">
+                <span className="profileQuickLinkIcon">🆘</span>
+                <span className="profileQuickLinkText">Help Center</span>
+              </Link>
+            </div>
+          </div>
         </div>
-        {!isEditing && (
-          <button 
-            className="edit-button"
-            onClick={() => setIsEditing(true)}
-          >
-            Edit Profile
-          </button>
-        )}
       </div>
 
-      <form onSubmit={handleSubmit} className="profile-form">
-        <div className="form-section">
-          <h2>Personal Information</h2>
-          <div className="form-group">
-            <label htmlFor="name">Name</label>
-            <input
-              type="text"
-              id="name"
-              value={profile.name}
-              onChange={(e) => setProfile({...profile, name: e.target.value})}
-              disabled={!isEditing}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="bio">Bio</label>
-            <textarea
-              id="bio"
-              value={profile.bio}
-              onChange={(e) => setProfile({...profile, bio: e.target.value})}
-              disabled={!isEditing}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="location">Location</label>
-            <input
-              type="text"
-              id="location"
-              value={profile.location}
-              onChange={(e) => setProfile({...profile, location: e.target.value})}
-              disabled={!isEditing}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="phone">Phone</label>
-            <input
-              type="tel"
-              id="phone"
-              value={profile.phone}
-              onChange={(e) => setProfile({...profile, phone: e.target.value})}
-              disabled={!isEditing}
-            />
-          </div>
-        </div>
-
-        <div className="form-section">
-          <h2>Garden Memberships</h2>
-          <div className="gardens-list">
-            {profile.gardensJoined.map(garden => (
-              <div key={garden._id} className="garden-item">
-                <h3>{garden.name}</h3>
-                <p>Role: {garden.role}</p>
-                <p>Joined: {new Date(garden.joinedAt).toLocaleDateString()}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="form-section">
-          <h2>Managed Plots</h2>
-          <div className="plots-list">
-            {profile.plotsManaged.map(plot => (
-              <div key={plot._id} className="plot-item">
-                <h3>Plot {plot.number}</h3>
-                <p>Garden: {plot.garden.name}</p>
-                <p>Status: {plot.status}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {isEditing && (
-          <div className="form-actions">
-            <button type="button" onClick={() => setIsEditing(false)}>
-              Cancel
-            </button>
-            <button type="submit">
-              Save Changes
-            </button>
-          </div>
-        )}
-      </form>
+      <Footer />
     </div>
   );
-}
+};
 
 export default Profile;

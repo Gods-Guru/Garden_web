@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import useAuthStore from '../../store/useAuthStore';
+import LocationPicker from '../../components/maps/LocationPicker';
 import './CreateGarden.scss';
 
 // Helper function to parse rules from textarea input
@@ -74,6 +75,9 @@ function CreateGarden({ onGardenCreated }) {
       website: ''
     }
   });
+
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [locationError, setLocationError] = useState('');
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -121,22 +125,24 @@ function CreateGarden({ onGardenCreated }) {
 
 
       // Validate required fields
-      if (!form.name || !form.description || !form.address.street || !form.address.city || !form.address.state) {
+      if (!form.name || !form.description) {
         throw new Error('Please fill in all required fields');
       }
 
+      // Validate location is selected
+      if (!selectedLocation) {
+        setLocationError('Please select a location for your garden');
+        throw new Error('Please select a location for your garden');
+      }
+
       // Prepare data to match backend schema EXACTLY
-      const coordinates = [0, 0]; // [longitude, latitude] - TODO: Add geocoding
+      const coordinates = [selectedLocation.lng, selectedLocation.lat]; // [longitude, latitude]
 
       const gardenData = {
         name: form.name,
         description: form.description,
         location: {
-          address: form.address.street,
-          city: form.address.city,
-          state: form.address.state,
-          zipCode: form.address.zipCode,
-          country: form.address.country || 'United States',
+          address: selectedLocation.address,
           coordinates: {
             type: 'Point',
             coordinates: coordinates
@@ -375,70 +381,15 @@ function CreateGarden({ onGardenCreated }) {
         </div>
 
         <div className="form-section">
-          <h3>Location</h3>
-          <div className="form-group">
-            <label htmlFor="address.street">Street Address*</label>
-            <input 
-              type="text" 
-              id="address.street" 
-              name="address.street" 
-              value={form.address.street} 
-              onChange={handleChange} 
-              required 
-            />
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="address.city">City*</label>
-              <input 
-                type="text" 
-                id="address.city" 
-                name="address.city" 
-                value={form.address.city} 
-                onChange={handleChange} 
-                required 
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="address.state">State*</label>
-              <input 
-                type="text" 
-                id="address.state" 
-                name="address.state" 
-                value={form.address.state} 
-                onChange={handleChange} 
-                required 
-              />
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="address.zipCode">ZIP Code*</label>
-              <input 
-                type="text" 
-                id="address.zipCode" 
-                name="address.zipCode" 
-                value={form.address.zipCode} 
-                onChange={handleChange} 
-                required 
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="address.country">Country*</label>
-              <input 
-                type="text" 
-                id="address.country" 
-                name="address.country" 
-                value={form.address.country} 
-                onChange={handleChange} 
-                required 
-              />
-            </div>
-          </div>
+          <LocationPicker
+            onLocationSelect={(location) => {
+              setSelectedLocation(location);
+              setLocationError('');
+            }}
+            initialLocation={selectedLocation}
+            required={true}
+            error={locationError}
+          />
         </div>
 
         <div className="form-section">
