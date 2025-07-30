@@ -105,41 +105,7 @@ const EnhancedDashboardLayout = ({ children, user, roles, activeRole }) => {
           ))}
         </nav>
 
-        {/* User Profile Section */}
-        <div className="sidebar-profile">
-          <div className="profile-info">
-            <div className="profile-avatar">
-              {user?.profilePicture ? (
-                <img src={user.profilePicture} alt={user.name} />
-              ) : (
-                <span className="avatar-placeholder">
-                  {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                </span>
-              )}
-              <div className="online-indicator"></div>
-            </div>
-            {!sidebarCollapsed && (
-              <div className="profile-details">
-                <h4>{user?.name || 'User'}</h4>
-                <p className="user-role">{activeRole}</p>
-                <p className="user-email">{user?.email}</p>
-              </div>
-            )}
-          </div>
 
-          {!sidebarCollapsed && (
-            <div className="profile-actions">
-              <Link to="/profile" className="profile-action-btn">
-                <span className="action-icon">👤</span>
-                <span>View Profile</span>
-              </Link>
-              <Link to="/settings" className="profile-action-btn">
-                <span className="action-icon">⚙️</span>
-                <span>Settings</span>
-              </Link>
-            </div>
-          )}
-        </div>
 
         <div className="sidebar-footer">
           <button

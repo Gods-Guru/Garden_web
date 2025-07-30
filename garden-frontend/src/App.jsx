@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import useAuthInit from './hooks/useAuthInit'
 import ProtectedRoute from './components/auth/ProtectedRoute'
+import HomeRedirect from './components/auth/HomeRedirect'
 import Home from './pages/Home'
 import About from './pages/About'
 import Features from './pages/Features'
@@ -30,7 +31,6 @@ import Profile from './pages/Profile/Profile'
 import EditProfile from './pages/EditProfile'
 import AdminDashboard from './features/admin/components/AdminDashboard'
 import UserManagement from './features/admin/components/users/UserManagement'
-import ApplicationManagement from './features/admin/components/applications/ApplicationManagement'
 import TaskManagement from './features/admin/components/tasks/TaskManagement'
 import AdminCalendar from './features/admin/components/calendar/AdminCalendar'
 import AnnouncementManagement from './features/admin/components/announcements/AnnouncementManagement'
@@ -45,7 +45,7 @@ import SecondAdminGardens from './pages/SecondAdmin/SecondAdminGardens'
 import SecondAdminCommunity from './pages/SecondAdmin/SecondAdminCommunity'
 import SecondAdminEvents from './pages/SecondAdmin/SecondAdminEvents'
 
-// New page imports
+// Page components
 import AddCrop from './pages/AddCrop'
 import TaskDetails from './pages/TaskDetails'
 import EditTask from './pages/EditTask'
@@ -53,11 +53,10 @@ import Plots from './pages/Plots'
 import Forum from './pages/Forum'
 import Applications from './pages/Applications'
 import AuditLog from './pages/AuditLog'
-import GardenManagement from './pages/GardenManagement'
-
-import Footer from './components/common/Footer'
+import GardenManagementPage from './pages/GardenManagement'
+import MediaGallery from './pages/MediaGallery'
+import ManageUsers from './pages/Admin/ManageUsers'
 import CreateGarden from './pages/Admin/CreateGarden'
-// import GardenManagement from './pages/GardenManagement'
 import Gardens from './pages/Gardens'
 import Events from './pages/Events'
 import Tasks from './pages/Tasks'
@@ -65,12 +64,11 @@ import Notifications from './pages/Notifications'
 import Manage from './pages/Manage'
 import Help from './pages/Help'
 import Contact from './pages/Contact'
-import AdminUsers from './pages/Admin/AdminUsers'
-import AdminGardens from './pages/Admin/AdminGardens'
+
+import Footer from './components/common/Footer'
 import Toast from './components/common/Toast'
 import ErrorBoundary from './components/common/ErrorBoundary'
 
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -89,288 +87,85 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-    <ErrorBoundary>
-      <Router>
-        <Toast />
-        <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/features" element={<Features />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        {/* Verification routes */}
-        <Route path="/verify-email" element={<EmailVerification />} />
-        <Route path="/two-factor-auth" element={<TwoFactorAuth />} />
-        <Route path="/gardens" element={<Gardens />} />
+      <ErrorBoundary>
+        <Router>
+          <Toast />
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<HomeRedirect />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/gardens" element={<Gardens />} />
+            <Route path="/help" element={<Help />} />
+            <Route path="/contact" element={<Contact />} />
 
-        {/* Protected routes - require authentication */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } />
+            {/* Verification routes */}
+            <Route path="/verify-email" element={<EmailVerification />} />
+            <Route path="/two-factor-auth" element={<TwoFactorAuth />} />
 
-        <Route path="/gardens/:id" element={
-          <ProtectedRoute>
-            <Garden />
-          </ProtectedRoute>
-        } />
+            {/* Protected user routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/gardens/:id" element={<Garden />} />
+              <Route path="/media" element={<MediaGallery />} />
+              <Route path="/community" element={<Community />} />
+              <Route path="/events" element={<Events />} />
+              <Route path="/tasks" element={<Tasks />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/payments" element={<Payments />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/my-dashboard" element={<UserDashboard />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/edit" element={<EditProfile />} />
+              <Route path="/my-plot" element={<MyPlot />} />
+              <Route path="/activity-log" element={<ActivityLog />} />
+              <Route path="/garden-diary" element={<GardenDiary />} />
+              <Route path="/resources" element={<Resources />} />
+              <Route path="/report-issue" element={<ReportIssue />} />
+              <Route path="/crops/add" element={<AddCrop />} />
+              <Route path="/tasks/:taskId" element={<TaskDetails />} />
+              <Route path="/tasks/:taskId/edit" element={<EditTask />} />
+              <Route path="/plots" element={<Plots />} />
+              <Route path="/forum" element={<Forum />} />
+              <Route path="/gardens/create" element={<CreateGarden />} />
+            </Route>
 
-        <Route path="/gardens/:gardenId/manage" element={
-          <ProtectedRoute>
-            <GardenManagement />
-          </ProtectedRoute>
-        } />
+            {/* Manager routes */}
+            <Route element={<ProtectedRoute roles={['admin', 'manager']} />}>
+              <Route path="/manage" element={<Manage />} />
+              <Route path="/applications" element={<Applications />} />
+              <Route path="/garden-management" element={<GardenManagementPage />} />
+              <Route path="/manager/dashboard" element={<ManagerDashboard />} />
+              <Route path="/manager/gardens" element={<SecondAdminGardens />} />
+              <Route path="/manager/community" element={<SecondAdminCommunity />} />
+              <Route path="/manager/events" element={<SecondAdminEvents />} />
+            </Route>
 
-        <Route path="/media" element={
-          <ProtectedRoute>
-            <Media />
-          </ProtectedRoute>
-        } />
+            {/* Admin routes */}
+            <Route element={<ProtectedRoute roles={['admin']} />}>
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin/gardens" element={<GardenManagement />} />
+              <Route path="/admin/plots" element={<PlotManagement />} />
+              <Route path="/admin/users" element={<ManageUsers />} />
+              <Route path="/admin/tasks" element={<TaskManagement />} />
+              <Route path="/admin/calendar" element={<AdminCalendar />} />
+              <Route path="/admin/announcements" element={<AnnouncementManagement />} />
+              <Route path="/admin/media" element={<MediaModeration />} />
+              <Route path="/admin/reports" element={<ReportsAnalytics />} />
+              <Route path="/admin/settings" element={<AdminSettings />} />
+              <Route path="/admin/utilities" element={<AdminUtilities />} />
+              <Route path="/admin/audit-log" element={<AuditLog />} />
+            </Route>
 
-        <Route path="/community" element={
-          <ProtectedRoute>
-            <Community />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/events" element={
-          <ProtectedRoute>
-            <Events />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/tasks" element={
-          <ProtectedRoute>
-            <Tasks />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/notifications" element={
-          <ProtectedRoute>
-            <Notifications />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/manage" element={
-          <ProtectedRoute roles={['admin', 'manager']}>
-            <Manage />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/payments" element={
-          <ProtectedRoute>
-            <Payments />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/settings" element={
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/my-dashboard" element={
-          <ProtectedRoute>
-            <UserDashboard />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/profile/edit" element={
-          <ProtectedRoute>
-            <EditProfile />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/my-plot" element={
-          <ProtectedRoute>
-            <MyPlot />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/activity-log" element={
-          <ProtectedRoute>
-            <ActivityLog />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/garden-diary" element={
-          <ProtectedRoute>
-            <GardenDiary />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/resources" element={
-          <ProtectedRoute>
-            <Resources />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/report-issue" element={
-          <ProtectedRoute>
-            <ReportIssue />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/crops/add" element={
-          <ProtectedRoute>
-            <AddCrop />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/tasks/:taskId" element={
-          <ProtectedRoute>
-            <TaskDetails />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/tasks/:taskId/edit" element={
-          <ProtectedRoute>
-            <EditTask />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/plots" element={
-          <ProtectedRoute>
-            <Plots />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/forum" element={
-          <ProtectedRoute>
-            <Forum />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/applications" element={
-          <ProtectedRoute roles={['admin', 'manager']}>
-            <Applications />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/garden-management" element={
-          <ProtectedRoute roles={['admin', 'manager']}>
-            <GardenManagement />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/admin/audit-log" element={
-          <ProtectedRoute roles={['admin']}>
-            <AuditLog />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/help" element={<Help />} />
-        <Route path="/contact" element={<Contact />} />
-
-        {/* Garden creation - any authenticated user */}
-        <Route path="/gardens/create" element={
-          <ProtectedRoute>
-            <CreateGarden />
-          </ProtectedRoute>
-        } />
-
-        {/* Admin routes - require admin role */}
-        <Route path="/admin/dashboard" element={
-          <ProtectedRoute roles={['admin']}>
-            <AdminDashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/gardens" element={
-          <ProtectedRoute roles={['admin']}>
-            <GardenManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/plots" element={
-          <ProtectedRoute roles={['admin']}>
-            <PlotManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/users" element={
-          <ProtectedRoute roles={['admin']}>
-            <UserManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/applications" element={
-          <ProtectedRoute roles={['admin']}>
-            <ApplicationManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/tasks" element={
-          <ProtectedRoute roles={['admin']}>
-            <TaskManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/calendar" element={
-          <ProtectedRoute roles={['admin']}>
-            <AdminCalendar />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/announcements" element={
-          <ProtectedRoute roles={['admin']}>
-            <AnnouncementManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/media" element={
-          <ProtectedRoute roles={['admin']}>
-            <MediaModeration />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/reports" element={
-          <ProtectedRoute roles={['admin']}>
-            <ReportsAnalytics />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/settings" element={
-          <ProtectedRoute roles={['admin']}>
-            <AdminSettings />
-          </ProtectedRoute>
-        } />
-        <Route path="/admin/utilities" element={
-          <ProtectedRoute roles={['admin']}>
-            <AdminUtilities />
-          </ProtectedRoute>
-        } />
-
-        {/* Manager routes */}
-        <Route path="/manager/dashboard" element={
-          <ProtectedRoute roles={['admin', 'manager']}>
-            <ManagerDashboard />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/manager/gardens" element={
-          <ProtectedRoute roles={['admin', 'manager']}>
-            <SecondAdminGardens />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/manager/community" element={
-          <ProtectedRoute roles={['admin', 'manager']}>
-            <SecondAdminCommunity />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/manager/events" element={
-          <ProtectedRoute roles={['admin', 'manager']}>
-            <SecondAdminEvents />
-          </ProtectedRoute>
-        } />
-
-        {/* Catch all */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
-    </ErrorBoundary>
+            {/* Catch all */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Router>
+      </ErrorBoundary>
     </QueryClientProvider>
   )
 }

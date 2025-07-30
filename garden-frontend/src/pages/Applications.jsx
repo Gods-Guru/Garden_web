@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import useGardenStore from '../../store/useGardenStore';
-import { 
-  Loader, 
+import useGardenStore from '../store/useGardenStore';
+import {
+  Loader,
   AlertTriangle,
   Clock,
   Check,

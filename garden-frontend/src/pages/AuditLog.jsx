@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../components/common/Navbar';
-import Footer from '../components/common/Footer';
 import './AuditLog.scss';
 
 const AuditLog = () => {
@@ -171,20 +169,16 @@ const AuditLog = () => {
   if (loading) {
     return (
       <div className="audit-log-page">
-        <Navbar />
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p>Loading audit logs...</p>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="audit-log-page">
-      <Navbar />
-      
       <div className="audit-log-container">
         <div className="audit-log-header">
           <h1>Audit Log</h1>
@@ -326,8 +320,6 @@ const AuditLog = () => {
           </div>
         )}
       </div>
-      
-      <Footer />
     </div>
   );
 };

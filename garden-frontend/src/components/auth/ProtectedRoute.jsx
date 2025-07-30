@@ -1,13 +1,15 @@
 import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
+import DashboardLayout from '../layouts/DashboardLayout';
 
-const ProtectedRoute = ({ 
-  children, 
-  roles = [], 
+const ProtectedRoute = ({
+  children,
+  roles = [],
   gardenId = null,
   gardenRoles = [],
-  fallback = null 
+  fallback = null,
+  skipLayout = false
 }) => {
   const { isAuthenticated, user, loading, getUserRoleInGarden, isGardenAdmin, canManageGarden } = useAuthStore();
   const location = useLocation();
@@ -79,7 +81,19 @@ const ProtectedRoute = ({
   }
 
   // All checks passed - render the protected component
-  return children;
+  const content = children || <Outlet />;
+
+  // Skip layout for dashboard (it has its own layout) or if explicitly requested
+  if (skipLayout || location.pathname === '/dashboard') {
+    return content;
+  }
+
+  // Wrap other protected pages with dashboard layout
+  return (
+    <DashboardLayout>
+      {content}
+    </DashboardLayout>
+  );
 };
 
 export default ProtectedRoute;
