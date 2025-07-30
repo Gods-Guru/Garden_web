@@ -1,0 +1,120 @@
+.gardener-dashboard {
+  .dashboard-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .dashboard-main-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .dashboard-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+
+    h3 {
+      margin: 0 0 1rem 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .view-all-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      color: #d97706;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+
+      &:hover {
+        color: #b45309;
+      }
+    }
+  }
+
+  .requests-section {
+    grid-column: 1 / -1;
+
+    .requests-summary {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+
+      .request-stat {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: 8px;
+        flex: 1;
+        min-width: 200px;
+
+        .stat-icon {
+          font-size: 1.5rem;
+        }
+
+        .stat-text {
+          font-weight: 500;
+          color: #374151;
+        }
+
+        .stat-status {
+          font-size: 0.875rem;
+          color: #059669;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  &.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+
+    .loading-spinner {
+      font-size: 1.125rem;
+      color: #6b7280;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 1024px) {
+  .gardener-dashboard {
+    .dashboard-main-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .gardener-dashboard {
+    .dashboard-cards-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .requests-section {
+      .requests-summary {
+        flex-direction: column;
+        gap: 1rem;
+
+        .request-stat {
+          min-width: auto;
+        }
+      }
+    }
+  }
+}

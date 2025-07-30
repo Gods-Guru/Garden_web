@@ -1,29 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import useAuthStore from '../../store/useAuthStore';
-import useGardenStore from '../../store/useGardenStore';
-import Navbar from '../common/Navbar';
-import Footer from '../common/Footer';
+import { Link, useNavigate } from 'react-router-dom';
+import DashboardCard from './DashboardCard';
+import QuickActions from './QuickActions';
+import RecentActivity from './RecentActivity';
+import GardensList from './GardensList';
+import VolunteerActivity from './VolunteerActivity';
+import IssuesTable from './IssuesTable';
 import './ManagerDashboard.scss';
 
-const ManagerDashboard = () => {
-  const { user } = useAuthStore();
-  const { gardens, loading, fetchMyGardens } = useGardenStore();
-  const [pendingRequests, setPendingRequests] = useState([]);
-  const [gardenStats, setGardenStats] = useState({});
+const ManagerDashboard = ({ user, gardens }) => {
+  const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    gardensManaged: 0,
+    plotsAllocated: 0,
+    taskCompletionRate: 0,
+    eventsManaged: 0,
+    volunteerCount: 0,
+    pendingRequests: 0
+  });
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [volunteers, setVolunteers] = useState([]);
+  const [issues, setIssues] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchMyGardens();
-    fetchPendingRequests();
-    fetchGardenStats();
+    fetchManagerStats();
+    fetchRecentActivity();
+    fetchVolunteers();
+    fetchIssues();
   }, []);
 
-  const fetchPendingRequests = async () => {
-    // TODO: Implement API call to fetch pending plot requests
-  };
-
-  const fetchGardenStats = async () => {
-    // TODO: Implement API call to fetch garden statistics
+  const fetchManagerStats = async () => {
+    try {
+      // Mock data - replace with actual API calls
+      setStats({
+        gardensManaged: gardens?.length || 3,
+        plotsAllocated: 45,
+        taskCompletionRate: 87,
+        eventsManaged: 12,
+        volunteerCount: 28,
+        pendingRequests: 7
+      });
+    } catch (error) {
+      console.error('Error fetching manager stats:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const managedGardens = gardens.filter(g =>

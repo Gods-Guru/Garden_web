@@ -1,49 +1,114 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { jwtDecode } from 'jwt-decode';
 
 const useAuthStore = create(
   persist(
     (set, get) => ({
-      // Auth state
-      user: {
-        name: 'Demo User',
-        email: 'demo@gardenmanagement.com',
-        role: 'user',
-        avatar: '/api/placeholder/120/120',
-        bio: 'Welcome to the Community Garden Management System!',
-        location: 'Demo City',
-        phone: '+1 (555) 123-4567',
-        gardens: [],
-        plots: []
-      },
-      token: 'demo-token',
-      isAuthenticated: true,
-      loading: false,
+      // Authentication state
+      user: null,
+      token: null,
+      isAuthenticated: false,
+      isLoading: false,
       error: null,
 
-      // User's gardens and roles
-      userGardens: [],
-      currentGarden: null,
+      // Authorization state
+      roles: [], // Global roles from JWT
+      gardens: [], // Assigned gardens for managers/admins
+      gardenRoles: {}, // Garden-specific roles, keyed by gardenId
 
-      // Actions
-      setUser: (user) => set({ 
-        user, 
-        isAuthenticated: !!user,
-        userGardens: user?.gardens || []
+      // Core actions
+      setUser: (userData) => set({ 
+        user: userData,
+        isAuthenticated: !!userData
       }),
+      
+      setToken: (token) => {
+        localStorage.setItem('token', token);
+        set({ token });
+      },
+      
+      setRoles: (roles) => set({ roles }),
+      setGardens: (gardens) => set({ gardens }),
+      
+      // Authentication actions
+      login: async (credentials) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(credentials),
+          });
 
-      setToken: (token) => set({ token }),
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Login failed');
+          }
 
-      setLoading: (loading) => set({ loading }),
+          const responseData = await response.json();
+          console.log('Login response data:', responseData);
 
-      setError: (error) => set({ error }),
+          // Handle different response structures
+          let token, user;
+          if (responseData.data) {
+            // Backend returns: { success: true, data: { token, user } }
+            token = responseData.data.token;
+            user = responseData.data.user;
+          } else {
+            // Backend returns: { token, user }
+            token = responseData.token;
+            user = responseData.user;
+          }
 
-      setCurrentGarden: (garden) => set({ currentGarden: garden }),
+          console.log('Extracted token:', token);
+          console.log('Extracted user:', user);
 
-      // Get user's role in a specific garden
+          // Validate token before decoding
+          if (!token || typeof token !== 'string') {
+            console.error('Invalid token received:', token);
+            throw new Error('Invalid token received from server');
+          }
+
+          console.log('Decoding token:', token);
+          const decoded = jwtDecode(token);
+
+          localStorage.setItem('token', token);
+          localStorage.setItem('user', JSON.stringify(user));
+
+          set({
+            token,
+            user,
+            roles: decoded.roles || [],
+            isLoading: false,
+            isAuthenticated: true
+          });
+
+          // If user is a manager or admin, fetch their assigned gardens
+          if (decoded.roles?.includes('manager') || decoded.roles?.includes('admin')) {
+            get().fetchAssignedGardens();
+          }
+
+          return { success: true, user };
+        } catch (error) {
+          set({ 
+            error: error.message, 
+            isLoading: false,
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            roles: []
+          });
+          return { success: false, error: error.message };
+        }
+      },
+
+      // Role and access management
       getUserRoleInGarden: (gardenId) => {
-        const { user } = get();
+        const { user, roles } = get();
         if (!user || !user.gardens) return null;
+        
+        if (roles.includes('admin')) return 'admin';
         
         const membership = user.gardens.find(
           g => g.gardenId === gardenId || g.gardenId._id === gardenId
@@ -51,131 +116,135 @@ const useAuthStore = create(
         return membership?.role || null;
       },
 
-      // Check if user is garden owner/admin
-      isGardenAdmin: (gardenId) => {
-        const { user } = get();
-        if (!user) return false;
-        
-        // Global admin
-        if (user.role === 'admin') return true;
-        
-        // Garden-specific admin or owner
-        const role = get().getUserRoleInGarden(gardenId);
-        return role === 'owner' || role === 'admin';
+      // Garden role management
+      setGardenRoles: (gardenId, roles) => {
+        set(state => ({
+          gardenRoles: {
+            ...state.gardenRoles,
+            [gardenId]: roles
+          }
+        }));
       },
 
-      // Check if user can manage garden (owner, admin, or coordinator)
+      // Garden access checking
+      isGardenAdmin: (gardenId) => {
+        const { roles, gardenRoles } = get();
+        
+        // Global admin has access to all gardens
+        if (roles.includes('admin')) return true;
+        
+        // Check garden-specific roles
+        const gardenRole = gardenRoles[gardenId];
+        return gardenRole?.includes('admin') || gardenRole?.includes('owner');
+      },
+
+      // Access control functions
+      hasRole: (role) => {
+        const { roles } = get();
+        return roles.includes(role);
+      },
+
+      hasAnyRole: (roleList) => {
+        const { roles } = get();
+        return roleList.some(role => roles.includes(role));
+      },
+
+      // Garden management permissions
       canManageGarden: (gardenId) => {
-        const { user } = get();
+        const { roles, user } = get();
         if (!user) return false;
         
-        // Global admin
-        if (user.role === 'admin') return true;
+        // Global admin can manage all gardens
+        if (roles.includes('admin')) return true;
         
         // Garden-specific roles
         const role = get().getUserRoleInGarden(gardenId);
-        return ['owner', 'admin', 'coordinator'].includes(role);
+        return ['owner', 'admin', 'manager'].includes(role);
       },
 
-      // Login action
-      login: async (credentials) => {
-        set({ loading: true, error: null });
+      // Garden data management
+      fetchAssignedGardens: async () => {
+        const { token } = get();
+        set({ isLoading: true, error: null });
+        
         try {
-          const response = await fetch('/api/auth/login', {
-            method: 'POST',
+          const response = await fetch('/api/gardens/assigned', {
             headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(credentials),
+              'Authorization': `Bearer ${token}`
+            }
           });
-
-          const data = await response.json();
 
           if (!response.ok) {
-            throw new Error(data.message || 'Login failed');
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to fetch assigned gardens');
           }
 
-          // Check if 2FA is required
-          if (data.data.requires2FA) {
-            set({ loading: false, error: null });
-            return {
-              success: true,
-              requires2FA: true,
-              email: data.data.email,
-              twoFactorMethod: data.data.twoFactorMethod,
-              message: data.message
-            };
-          }
+          const gardens = await response.json();
+          set({ gardens, isLoading: false });
+          return gardens;
+        } catch (error) {
+          set({ error: error.message, isLoading: false });
+          throw error;
+        }
+      },
 
-          // Normal login success
-          const { user, token } = data.data;
-
-          set({
-            user,
-            token,
-            isAuthenticated: true,
-            userGardens: user.gardens || [],
-            loading: false,
-            error: null
+      // Two-factor authentication
+      verify2FA: async (email, code, method) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await fetch('/api/auth/verify-2fa', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, code, method })
           });
 
-          // Store token in localStorage for API calls
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || '2FA verification failed');
+          }
+
+          const { token, user } = await response.json();
+          const decoded = jwtDecode(token);
+
           localStorage.setItem('token', token);
+          set({
+            token,
+            user,
+            roles: decoded.roles || [],
+            isLoading: false,
+            isAuthenticated: true
+          });
+
+          if (decoded.roles?.includes('manager') || decoded.roles?.includes('admin')) {
+            get().fetchAssignedGardens();
+          }
 
           return { success: true, user };
         } catch (error) {
-          set({ 
-            loading: false, 
-            error: error.message,
-            user: null,
-            token: null,
-            isAuthenticated: false
-          });
+          set({ error: error.message, isLoading: false });
           return { success: false, error: error.message };
         }
       },
 
-      // Register action
-      register: async (userData) => {
-        set({ loading: true, error: null });
+      // Reset password functionality
+      requestPasswordReset: async (email) => {
+        set({ isLoading: true, error: null });
         try {
-          const response = await fetch('/api/auth/register', {
+          const response = await fetch('/api/auth/request-reset', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(userData),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
           });
-
-          const data = await response.json();
 
           if (!response.ok) {
-            throw new Error(data.message || 'Registration failed');
+            const error = await response.json();
+            throw new Error(error.message || 'Password reset request failed');
           }
 
-          const { user, token } = data.data;
-          
-          set({ 
-            user, 
-            token,
-            isAuthenticated: true,
-            userGardens: user.gardens || [],
-            loading: false,
-            error: null
-          });
-
-          // Store token in localStorage for API calls
-          localStorage.setItem('token', token);
-
-          return { success: true, user };
+          set({ isLoading: false });
+          return { success: true };
         } catch (error) {
-          set({ 
-            loading: false, 
-            error: error.message,
-            user: null,
-            token: null,
-            isAuthenticated: false
-          });
+          set({ error: error.message, isLoading: false });
           return { success: false, error: error.message };
         }
       },
@@ -183,23 +252,57 @@ const useAuthStore = create(
       // Logout action
       logout: () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
         set({
           user: null,
           token: null,
           isAuthenticated: false,
-          userGardens: [],
-          currentGarden: null,
-          loading: false,
-          error: null
+          gardens: [],
+          gardenRoles: {},
+          isLoading: false,
+          error: null,
+          roles: []
         });
+      },
+
+      // Initialize auth from localStorage
+      initializeAuth: () => {
+        const token = localStorage.getItem('token');
+        const userData = localStorage.getItem('user');
+
+        if (token && userData && typeof token === 'string') {
+          try {
+            const user = JSON.parse(userData);
+            const decoded = jwtDecode(token);
+
+            set({
+              token,
+              user,
+              isAuthenticated: true,
+              roles: decoded.roles || [],
+              isLoading: false
+            });
+
+            return true;
+          } catch (error) {
+            console.error('Error parsing stored auth data:', error);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            set({ isLoading: false });
+            return false;
+          }
+        }
+
+        set({ isLoading: false });
+        return false;
       },
 
       // Refresh user data
       refreshUser: async () => {
         const { token } = get();
-        if (!token) return;
+        if (!token) return false;
 
-        set({ loading: true });
+        set({ isLoading: true });
         try {
           const response = await fetch('/api/auth/me', {
             headers: {
@@ -211,30 +314,27 @@ const useAuthStore = create(
             const data = await response.json();
             set({ 
               user: data.user, 
-              userGardens: data.user.gardens || [],
-              loading: false 
+              gardens: data.user.gardens || [],
+              isLoading: false 
             });
+            return true;
           } else {
             // Token might be expired
             get().logout();
+            return false;
           }
         } catch (error) {
-          set({ loading: false, error: error.message });
+          set({ isLoading: false, error: error.message });
+          return false;
         }
       },
-
-      // Update user gardens (after joining/leaving)
-      updateUserGardens: (gardens) => set({
-        userGardens: gardens,
-        user: { ...get().user, gardens }
-      }),
 
       // Update user profile
       updateProfile: async (profileData) => {
         const { token, user } = get();
         if (!token) throw new Error('No authentication token');
 
-        set({ loading: true });
+        set({ isLoading: true });
         try {
           const response = await fetch('/api/auth/profile', {
             method: 'PUT',
@@ -251,77 +351,88 @@ const useAuthStore = create(
             const updatedUser = { ...user, ...profileData };
             set({
               user: updatedUser,
-              loading: false
+              isLoading: false
             });
             return { success: true, user: updatedUser };
           } else {
-            set({ loading: false, error: data.message });
+            set({ isLoading: false, error: data.message });
             throw new Error(data.message || 'Failed to update profile');
           }
         } catch (error) {
-          set({ loading: false, error: error.message });
+          set({ isLoading: false, error: error.message });
           throw error;
         }
       },
 
-      // Initialize auth state from localStorage
-      initializeAuth: () => {
-        const storedToken = localStorage.getItem('token');
-        const { token, user } = get();
+      // Token and session management
+      initializeSession: () => {
+        const token = localStorage.getItem('token');
+        if (!token) return false;
 
-        if (storedToken && !token) {
-          // Token exists in localStorage but not in store
-          set({ token: storedToken, isAuthenticated: !!user });
-        } else if (!storedToken && token) {
-          // Token exists in store but not in localStorage
-          localStorage.setItem('token', token);
+        try {
+          const decoded = jwtDecode(token);
+          const currentTime = Date.now() / 1000;
+          
+          // Check if token is expired
+          if (decoded.exp && decoded.exp < currentTime) {
+            get().logout();
+            return false;
+          }
+          
+          set({ token });
+          return get().validateToken();
+        } catch (error) {
+          get().logout();
+          return false;
         }
       },
 
-      // Validate current token
       validateToken: async () => {
         const { token } = get();
         if (!token) return false;
 
         try {
-          const response = await fetch('/api/auth/me', {
+          const response = await fetch('/api/auth/validate-token', {
             headers: {
-              'Authorization': `Bearer ${token}`,
-            },
+              'Authorization': `Bearer ${token}`
+            }
           });
 
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.user) {
-              // Update user data if token is valid
-              set({
-                user: data.user,
-                isAuthenticated: true,
-                userGardens: data.user.gardens || []
-              });
-              return true;
-            }
+          if (!response.ok) {
+            get().logout();
+            return false;
           }
 
-          // Token is invalid, clear auth state
-          get().logout();
-          return false;
+          const { user } = await response.json();
+          const decoded = jwtDecode(token);
+
+          set({
+            user,
+            roles: decoded.roles || [],
+            isAuthenticated: true
+          });
+
+          if (decoded.roles?.includes('manager') || decoded.roles?.includes('admin')) {
+            get().fetchAssignedGardens();
+          }
+
+          return true;
         } catch (error) {
-          console.error('Token validation error:', error);
           get().logout();
           return false;
         }
-      },
-
+      }
     }),
     {
-      name: 'auth-storage',
+      name: 'auth-store',
       partialize: (state) => ({
-        user: state.user,
         token: state.token,
-        isAuthenticated: state.isAuthenticated,
-        userGardens: state.userGardens,
+        user: state.user,
+        roles: state.roles,
+        gardens: state.gardens,
+        isAuthenticated: state.isAuthenticated
       }),
+      version: 1
     }
   )
 );

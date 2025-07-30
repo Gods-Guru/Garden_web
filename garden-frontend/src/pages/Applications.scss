@@ -1,0 +1,308 @@
+@use '../styles/variables' as *;
+@use '../styles/mixins' as *;
+
+.applications-page {
+  padding: 2rem;
+  
+  .applications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      color: $primary-color;
+      margin-bottom: 0.5rem;
+    }
+    
+    p {
+      color: $light-text;
+    }
+    
+    .filter-section {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: white;
+      padding: 0.5rem 1rem;
+      border-radius: $border-radius;
+      box-shadow: $shadow-sm;
+      
+      svg {
+        color: $light-text;
+      }
+      
+      .status-filter {
+        border: none;
+        outline: none;
+        background: transparent;
+        color: $text-color;
+        font-size: 1rem;
+        padding-right: 1rem;
+        cursor: pointer;
+      }
+    }
+  }
+  
+  .success-message {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba($success-color, 0.1);
+    color: $success-color;
+    padding: 1rem;
+    border-radius: $border-radius;
+    margin-bottom: 2rem;
+    
+    svg {
+      flex-shrink: 0;
+    }
+    
+    p {
+      flex: 1;
+      margin: 0;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      color: currentColor;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      opacity: 0.7;
+      
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+  
+  .applications-list {
+    display: grid;
+    gap: 1.5rem;
+    
+    .application-card {
+      background: white;
+      border-radius: $border-radius;
+      overflow: hidden;
+      box-shadow: $shadow-sm;
+      border-left: 4px solid;
+      
+      &.pending {
+        border-color: $warning-color;
+        .status-icon { color: $warning-color; }
+      }
+      
+      &.approved {
+        border-color: $success-color;
+        .status-icon { color: $success-color; }
+      }
+      
+      &.rejected {
+        border-color: $danger-color;
+        .status-icon { color: $danger-color; }
+      }
+      
+      &.withdrawn {
+        border-color: $light-text;
+        .status-icon { color: $light-text; }
+      }
+      
+      .application-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid $border-color;
+        
+        h2 {
+          font-size: 1.25rem;
+          color: $text-color;
+        }
+        
+        .status {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-weight: 500;
+          text-transform: capitalize;
+          
+          &.pending { color: $warning-color; }
+          &.approved { color: $success-color; }
+          &.rejected { color: $danger-color; }
+          &.withdrawn { color: $light-text; }
+        }
+      }
+      
+      .application-details {
+        padding: 1.5rem;
+        background: $background-light;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        
+        .detail-group {
+          label {
+            display: block;
+            color: $light-text;
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+          }
+          
+          span {
+            color: $text-color;
+            font-weight: 500;
+          }
+        }
+      }
+      
+      .application-content {
+        padding: 1.5rem;
+        
+        .content-section {
+          margin-bottom: 1.5rem;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+          
+          h3 {
+            font-size: 1rem;
+            color: $text-color;
+            margin-bottom: 0.5rem;
+          }
+          
+          p {
+            color: $text-color;
+            line-height: 1.6;
+            font-size: 0.875rem;
+          }
+        }
+        
+        .feedback-section {
+          margin-top: 1.5rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid $border-color;
+          
+          h3 {
+            color: $primary-color;
+          }
+        }
+      }
+      
+      .application-actions {
+        padding: 1.5rem;
+        background: $background-light;
+        border-top: 1px solid $border-color;
+        
+        .withdraw-btn {
+          padding: 0.75rem 1.5rem;
+          background: white;
+          color: $danger-color;
+          border: 1px solid $danger-color;
+          border-radius: $border-radius;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            background: $danger-color;
+            color: white;
+          }
+        }
+      }
+    }
+    
+    .no-applications {
+      text-align: center;
+      padding: 3rem;
+      background: white;
+      border-radius: $border-radius;
+      box-shadow: $shadow-sm;
+      
+      h3 {
+        color: $text-color;
+        margin-bottom: 0.5rem;
+      }
+      
+      p {
+        color: $light-text;
+      }
+    }
+  }
+  
+  .applications-loading {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    
+    .spinner {
+      animation: spin 1s linear infinite;
+      color: $primary-color;
+    }
+    
+    p {
+      color: $light-text;
+    }
+  }
+  
+  .applications-error {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    text-align: center;
+    padding: 2rem;
+    
+    svg {
+      color: $danger-color;
+    }
+    
+    h2 {
+      color: $danger-color;
+      margin-bottom: 0.5rem;
+    }
+    
+    p {
+      color: $text-color;
+      max-width: 400px;
+      margin-bottom: 1.5rem;
+    }
+    
+    .retry-btn {
+      padding: 0.75rem 1.5rem;
+      background: $primary-color;
+      color: white;
+      border: none;
+      border-radius: $border-radius;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      
+      &:hover {
+        background: darken($primary-color, 5%);
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -6,8 +6,16 @@ import useAuthInit from './hooks/useAuthInit'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import Home from './pages/Home'
 import About from './pages/About'
+import Features from './pages/Features'
+import Terms from './pages/Terms'
+import PrivacyPolicy from './pages/PrivacyPolicy'
 import Register from './pages/Register'
 import Login from './pages/Login'
+import MyPlot from './pages/MyPlot'
+import ActivityLog from './pages/ActivityLog'
+import GardenDiary from './pages/GardenDiary'
+import Resources from './pages/Resources'
+import ReportIssue from './pages/ReportIssue'
 import EmailVerification from './pages/EmailVerification'
 import TwoFactorAuth from './pages/TwoFactorAuth'
 import Dashboard from './pages/Dashboard'
@@ -19,6 +27,7 @@ import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
 import UserDashboard from './pages/UserDashboard'
 import Profile from './pages/Profile/Profile'
+import EditProfile from './pages/EditProfile'
 import AdminDashboard from './features/admin/components/AdminDashboard'
 import UserManagement from './features/admin/components/users/UserManagement'
 import ApplicationManagement from './features/admin/components/applications/ApplicationManagement'
@@ -35,6 +44,16 @@ import ManagerDashboard from './components/dashboard/ManagerDashboard'
 import SecondAdminGardens from './pages/SecondAdmin/SecondAdminGardens'
 import SecondAdminCommunity from './pages/SecondAdmin/SecondAdminCommunity'
 import SecondAdminEvents from './pages/SecondAdmin/SecondAdminEvents'
+
+// New page imports
+import AddCrop from './pages/AddCrop'
+import TaskDetails from './pages/TaskDetails'
+import EditTask from './pages/EditTask'
+import Plots from './pages/Plots'
+import Forum from './pages/Forum'
+import Applications from './pages/Applications'
+import AuditLog from './pages/AuditLog'
+import GardenManagement from './pages/GardenManagement'
 
 import Footer from './components/common/Footer'
 import CreateGarden from './pages/Admin/CreateGarden'
@@ -77,6 +96,9 @@ export default function App() {
         {/* Public routes */}
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
+        <Route path="/features" element={<Features />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         {/* Verification routes */}
@@ -160,6 +182,90 @@ export default function App() {
         <Route path="/profile" element={
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/profile/edit" element={
+          <ProtectedRoute>
+            <EditProfile />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/my-plot" element={
+          <ProtectedRoute>
+            <MyPlot />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/activity-log" element={
+          <ProtectedRoute>
+            <ActivityLog />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/garden-diary" element={
+          <ProtectedRoute>
+            <GardenDiary />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/resources" element={
+          <ProtectedRoute>
+            <Resources />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/report-issue" element={
+          <ProtectedRoute>
+            <ReportIssue />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/crops/add" element={
+          <ProtectedRoute>
+            <AddCrop />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/tasks/:taskId" element={
+          <ProtectedRoute>
+            <TaskDetails />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/tasks/:taskId/edit" element={
+          <ProtectedRoute>
+            <EditTask />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/plots" element={
+          <ProtectedRoute>
+            <Plots />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/forum" element={
+          <ProtectedRoute>
+            <Forum />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/applications" element={
+          <ProtectedRoute roles={['admin', 'manager']}>
+            <Applications />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/garden-management" element={
+          <ProtectedRoute roles={['admin', 'manager']}>
+            <GardenManagement />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/audit-log" element={
+          <ProtectedRoute roles={['admin']}>
+            <AuditLog />
           </ProtectedRoute>
         } />
 

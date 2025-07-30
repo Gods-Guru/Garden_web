@@ -76,6 +76,7 @@ try {
   const aiAssistantRoutes = require('./src/routes/aiAssistantRoutes');
   const weatherRoutes = require('./src/routes/weatherRoutes');
   const qrCodeRoutes = require('./src/routes/qrCodeRoutes');
+  const cropRoutes = require('./src/routes/cropRoutes');
 
   const postRoutes = require('./src/routes/postRoutes');
   const communityStatsRoutes = require('./src/routes/communityStats');
@@ -127,7 +128,7 @@ app.use(helmet({
 // Enhanced Rate Limiting with different tiers
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // Increased for general API usage
+  max: 400, // Increased for general API usage
   message: {
     success: false,
     error: 'Too many requests from this IP. Please try again later.',
@@ -143,7 +144,7 @@ const generalLimiter = rateLimit({
 
 const strictLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // Strict limit for sensitive operations
+  max: 50, // Strict limit for sensitive operations
   message: {
     success: false,
     error: 'Too many sensitive requests. Please try again later.',
@@ -201,11 +202,17 @@ app.use('/api/feedback', feedbackRoutes);
 app.use('/api/ai-assistant', aiAssistantRoutes);
 app.use('/api/weather', weatherRoutes);
 app.use('/api/qrcodes', qrCodeRoutes);
+app.use('/api/crops', cropRoutes);
 
 app.use('/api/posts', postRoutes);
 app.use('/api/community', communityStatsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/chat', chatRoutes);
+// Temporarily commented out for testing
+// app.use('/api/support', require('./src/routes/supportRoutes'));
+// app.use('/api/resources', require('./src/routes/resourceRoutes'));
+// app.use('/api/logs', require('./src/routes/logRoutes'));
+// app.use('/api/complaints', require('./src/routes/complaintRoutes'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {

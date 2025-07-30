@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import useAuthStore from '../../../../store/useAuthStore';
+import useAuthStore from '../../../store/useAuthStore';
 
-export const useUsers = () => {
+const useUsers = () => {
   const { token } = useAuthStore();
   const queryClient = useQueryClient();
   const [error, setError] = useState(null);
@@ -115,3 +115,5 @@ export const useUsers = () => {
     deleteUser: deleteUserMutation.mutate,
   };
 };
+
+export default useUsers;

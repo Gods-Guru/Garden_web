@@ -3,6 +3,11 @@ $primary-color: #2e7d32;
 $primary-light: #66bb6a;
 $primary-dark: #1b5e20;
 $accent-color: #ffb74d;
+$success-color: #4caf50;
+$warning-color: #ff9800;
+$danger-color: #f44336;
+$info-color: #2196f3;
+$border-color: #e2e8f0;
 $text-color: #333;
 $text-secondary: #777;
 $light-text: #777;
@@ -20,4 +25,5 @@ $transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 
 // Border Radius Variables
 $border-radius: 12px;
+$border-radius-sm: 4px;
 $border-radius-lg: 24px;

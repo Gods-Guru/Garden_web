@@ -3,15 +3,20 @@ import useAuthStore from '../../store/useAuthStore';
 import LoadingSpinner from '../common/LoadingSpinner';
 import './RecentActivity.scss';
 
-const RecentActivity = ({ expanded = false, limit = 5 }) => {
+const RecentActivity = ({ expanded = false, limit = 5, activities: propActivities }) => {
   const { user } = useAuthStore();
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchActivities();
-  }, [limit]);
+    if (propActivities) {
+      setActivities(propActivities);
+      setLoading(false);
+    } else {
+      fetchActivities();
+    }
+  }, [limit, propActivities]);
 
   const fetchActivities = async () => {
     setLoading(true);

@@ -569,6 +569,89 @@ const getPlotStats = catchAsync(async (req, res, next) => {
   });
 });
 
+// Get user's assigned plot
+const getMyPlot = catchAsync(async (req, res, next) => {
+  const plot = await Plot.findOne({ assignedTo: req.user._id })
+    .populate('garden', 'name location')
+    .populate('assignedTo', 'name email');
+
+  if (!plot) {
+    return res.status(404).json({
+      success: false,
+      message: 'No plot assigned to you'
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    plot
+  });
+});
+
+// Update plot notes
+const updateMyPlotNotes = catchAsync(async (req, res, next) => {
+  const { notes } = req.body;
+
+  const plot = await Plot.findOneAndUpdate(
+    { assignedTo: req.user._id },
+    { notes },
+    { new: true, runValidators: true }
+  );
+
+  if (!plot) {
+    return next(new AppError('No plot assigned to you', 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'Plot notes updated successfully',
+    plot
+  });
+});
+
+// Upload plot image
+const uploadPlotImage = catchAsync(async (req, res, next) => {
+  if (!req.file) {
+    return next(new AppError('Please provide an image file', 400));
+  }
+
+  const plot = await Plot.findOne({ assignedTo: req.user._id });
+
+  if (!plot) {
+    return next(new AppError('No plot assigned to you', 404));
+  }
+
+  // Add image to plot images array
+  const imageUrl = `/uploads/plots/${req.file.filename}`;
+  plot.images = plot.images || [];
+  plot.images.push(imageUrl);
+
+  await plot.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Image uploaded successfully',
+    imageUrl
+  });
+});
+
+// Apply for plot
+const applyForPlot = catchAsync(async (req, res, next) => {
+  const { gardenId, plotPreferences, message } = req.body;
+
+  // Check if user already has a plot
+  const existingPlot = await Plot.findOne({ assignedTo: req.user._id });
+  if (existingPlot) {
+    return next(new AppError('You already have a plot assigned', 400));
+  }
+
+  // For now, just return success (in production, this would create an application record)
+  res.status(200).json({
+    success: true,
+    message: 'Plot application submitted successfully. You will be notified when reviewed.'
+  });
+});
+
 module.exports = {
   getPlots,
   getPlot,
@@ -580,5 +663,9 @@ module.exports = {
   getMyPlots,
   addPlantToPlot,
   updatePlantStatus,
-  getPlotStats
+  getPlotStats,
+  getMyPlot,
+  updateMyPlotNotes,
+  uploadPlotImage,
+  applyForPlot
 };

@@ -778,6 +778,79 @@ const bulkTaskOperations = catchAsync(async (req, res, next) => {
   });
 });
 
+/**
+ * Accept a task
+ */
+const acceptTask = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const userId = req.user._id;
+
+  const task = await Task.findById(id);
+  if (!task) {
+    return next(new AppError('Task not found', 404));
+  }
+
+  // Check if task is available
+  if (task.status !== 'pending') {
+    return next(new AppError('Task is not available for acceptance', 400));
+  }
+
+  // Check if user is already assigned
+  if (task.isAssignedTo(userId)) {
+    return next(new AppError('You are already assigned to this task', 400));
+  }
+
+  // Assign task to user
+  task.assignedTo.push({
+    user: userId,
+    assignedAt: new Date(),
+    status: 'accepted'
+  });
+  task.status = 'in-progress';
+
+  await task.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Task accepted successfully',
+    data: { task }
+  });
+});
+
+/**
+ * Volunteer for a task
+ */
+const volunteerForTask = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const userId = req.user._id;
+
+  const task = await Task.findById(id);
+  if (!task) {
+    return next(new AppError('Task not found', 404));
+  }
+
+  // Check if user already volunteered
+  const alreadyVolunteered = task.volunteers && task.volunteers.some(v => v.user.toString() === userId.toString());
+  if (alreadyVolunteered) {
+    return next(new AppError('You have already volunteered for this task', 400));
+  }
+
+  // Add user to volunteers
+  if (!task.volunteers) task.volunteers = [];
+  task.volunteers.push({
+    user: userId,
+    volunteeredAt: new Date()
+  });
+
+  await task.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Successfully volunteered for task',
+    data: { task }
+  });
+});
+
 module.exports = {
   getTasks,
   getTask,
@@ -790,5 +863,7 @@ module.exports = {
   getMyTasks,
   getTaskStats,
   deleteTask,
-  bulkTaskOperations
+  bulkTaskOperations,
+  acceptTask,
+  volunteerForTask
 };

@@ -8,8 +8,17 @@ export const useAuthInit = () => {
   useEffect(() => {
     const initAuth = async () => {
       try {
+        console.log('Starting auth initialization...');
+
+        // Check if initializeAuth exists
+        if (typeof initializeAuth !== 'function') {
+          console.error('initializeAuth is not a function:', initializeAuth);
+          throw new Error('initializeAuth method is missing from auth store');
+        }
+
         // Initialize auth state from localStorage
-        initializeAuth();
+        const initialized = initializeAuth();
+        console.log('Auth initialized:', initialized);
 
         // If we have a token, try to refresh user data
         const storedToken = localStorage.getItem('token');

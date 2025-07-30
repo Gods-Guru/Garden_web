@@ -15,6 +15,14 @@ router.post('/', authorize('admin', 'manager'), validate(createTaskSchema), task
 router.put('/:id', authorize('admin', 'manager'), validate(updateTaskSchema), taskController.updateTask);
 router.delete('/:id', authorize('admin', 'manager'), taskController.deleteTask);
 
+// User task routes
+router.get('/my-tasks', taskController.getMyTasks);
+
+// Task action routes
+router.patch('/:id/accept', taskController.acceptTask);
+router.patch('/:id/complete', taskController.completeTask);
+router.post('/:id/volunteer', taskController.volunteerForTask);
+
 // Advanced, role-aware task routes
 router.get('/my', taskController.getMyTasks);
 router.get('/stats/:gardenId', taskController.getTaskStats);

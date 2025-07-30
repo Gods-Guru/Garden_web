@@ -1,0 +1,269 @@
+@use '../styles/variables' as *;
+@use '../styles/mixins' as *;
+
+.apply-page {
+  padding: 2rem;
+  
+  .apply-header {
+    margin-bottom: 2rem;
+    
+    h1 {
+      font-size: 2rem;
+      color: $primary-color;
+      margin-bottom: 0.5rem;
+    }
+    
+    p {
+      color: $light-text;
+      font-size: 1.25rem;
+    }
+  }
+  
+  .apply-container {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+    
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .garden-info {
+    background: white;
+    border-radius: $border-radius;
+    overflow: hidden;
+    box-shadow: $shadow-sm;
+    
+    .garden-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+    
+    .info-content {
+      padding: 1.5rem;
+      
+      h2 {
+        color: $text-color;
+        margin-bottom: 1rem;
+      }
+      
+      p {
+        color: $text-color;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+      }
+      
+      .plot-details,
+      .requirements {
+        margin-bottom: 1.5rem;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
+        h3 {
+          font-size: 1rem;
+          color: $text-color;
+          margin-bottom: 0.75rem;
+        }
+        
+        ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          
+          li {
+            color: $text-color;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid $border-color;
+            font-size: 0.875rem;
+            
+            &:last-child {
+              border-bottom: none;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .apply-form {
+    background: white;
+    border-radius: $border-radius;
+    padding: 2rem;
+    box-shadow: $shadow-sm;
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+      
+      label {
+        display: block;
+        color: $text-color;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        
+        &::after {
+          content: '*';
+          color: $danger-color;
+          margin-left: 0.25rem;
+        }
+      }
+      
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid $border-color;
+        border-radius: $border-radius-sm;
+        font-size: 1rem;
+        background: white;
+        transition: all 0.3s ease;
+        
+        &::placeholder {
+          color: rgba($text-color, 0.5);
+        }
+        
+        &:focus {
+          outline: none;
+          border-color: $primary-color;
+          box-shadow: 0 0 0 2px rgba($primary-color, 0.1);
+        }
+        
+        &.error {
+          border-color: $danger-color;
+          
+          &:focus {
+            box-shadow: 0 0 0 2px rgba($danger-color, 0.1);
+          }
+        }
+      }
+      
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+      
+      .error-text {
+        color: $danger-color;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: block;
+      }
+    }
+    
+    .submit-btn {
+      width: 100%;
+      padding: 1rem;
+      background: $primary-color;
+      color: white;
+      border: none;
+      border-radius: $border-radius;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 2rem;
+      position: relative;
+      overflow: hidden;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: all 0.4s ease-out;
+      }
+      
+      &:active::after {
+        width: 300px;
+        height: 300px;
+        opacity: 0;
+      }
+      
+      &:hover {
+        background: darken($primary-color, 5%);
+      }
+      
+      &:disabled {
+        background: rgba($primary-color, 0.7);
+        cursor: not-allowed;
+      }
+    }
+  }
+  
+  .apply-loading {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    
+    .spinner {
+      animation: spin 1s linear infinite;
+      color: $primary-color;
+    }
+    
+    p {
+      color: $light-text;
+    }
+  }
+  
+  .apply-error {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    text-align: center;
+    padding: 2rem;
+    
+    svg {
+      color: $danger-color;
+    }
+    
+    h2 {
+      color: $danger-color;
+      margin-bottom: 0.5rem;
+    }
+    
+    p {
+      color: $text-color;
+      max-width: 400px;
+      margin-bottom: 1.5rem;
+    }
+    
+    .retry-btn {
+      padding: 0.75rem 1.5rem;
+      background: $primary-color;
+      color: white;
+      border: none;
+      border-radius: $border-radius;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      
+      &:hover {
+        background: darken($primary-color, 5%);
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

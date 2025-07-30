@@ -10,6 +10,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
+  optimizeDeps: {
+    include: ['axios'],
+    force: true
+  },
   server: {
     proxy: {
       '/api': {

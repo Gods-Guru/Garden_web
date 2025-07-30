@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
 import './QuickActions.scss';
 
-const QuickActions = () => {
+const QuickActions = ({ actions: propActions }) => {
   const { user } = useAuthStore();
 
-  const actions = [
+  // Use provided actions or default actions
+  const defaultActions = [
     {
       title: 'Create Garden',
       description: 'Start a new community garden',
@@ -51,9 +52,9 @@ const QuickActions = () => {
     }
   ];
 
-  // Add admin-specific actions
+  // Add admin-specific actions to default actions
   if (user?.role === 'admin') {
-    actions.push(
+    defaultActions.push(
       {
         title: 'Admin Panel',
         description: 'Manage system settings',
@@ -71,28 +72,54 @@ const QuickActions = () => {
     );
   }
 
+  // Use provided actions or default actions
+  const actions = propActions || defaultActions;
+
   return (
     <section className="quick-actions">
       <h2>Quick Actions</h2>
       <div className="actions-grid">
-        {actions.map((action, index) => (
-          <Link 
-            key={index}
-            to={action.link} 
-            className={`action-card action-${action.color}`}
-          >
-            <div className="action-icon">
-              {action.icon}
-            </div>
-            <div className="action-content">
-              <h3>{action.title}</h3>
-              <p>{action.description}</p>
-            </div>
-            <div className="action-arrow">
-              →
-            </div>
-          </Link>
-        ))}
+        {actions.map((action, index) => {
+          // Handle different action formats
+          if (action.action && typeof action.action === 'function') {
+            // New format with action function
+            return (
+              <button
+                key={index}
+                className="action-card action-button"
+                onClick={action.action}
+                style={{ backgroundColor: action.color }}
+              >
+                <div className="action-icon">
+                  {action.icon}
+                </div>
+                <div className="action-content">
+                  <h3>{action.label}</h3>
+                </div>
+              </button>
+            );
+          } else {
+            // Original format with link
+            return (
+              <Link
+                key={index}
+                to={action.link}
+                className={`action-card action-${action.color}`}
+              >
+                <div className="action-icon">
+                  {action.icon}
+                </div>
+                <div className="action-content">
+                  <h3>{action.title}</h3>
+                  <p>{action.description}</p>
+                </div>
+                <div className="action-arrow">
+                  →
+                </div>
+              </Link>
+            );
+          }
+        })}
       </div>
     </section>
   );

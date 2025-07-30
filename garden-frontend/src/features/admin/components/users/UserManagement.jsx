@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import UserForm from './UserForm';
-import { useUsers } from '@/features/admin/hooks/useUsers';
+import useUsers from '@/features/admin/hooks/useUsers';
 import './UserManagement.css';
 
 const UserManagement = () => {

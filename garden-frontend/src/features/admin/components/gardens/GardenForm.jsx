@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useDropzone } from 'react-dropzone';
 
 const GardenForm = ({ garden, onClose }) => {
   const [uploading, setUploading] = useState(false);
@@ -19,17 +18,15 @@ const GardenForm = ({ garden, onClose }) => {
     }
   });
 
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif']
-    },
-    multiple: true,
-    onDrop: async (acceptedFiles) => {
+  const handleFileUpload = async (event) => {
+    const files = event.target.files;
+    if (files.length > 0) {
       setUploading(true);
       // Handle file uploads here
+      console.log('Files selected:', files);
       setUploading(false);
     }
-  });
+  };
 
   const onSubmit = async (data) => {
     const gardenData = {
@@ -122,9 +119,15 @@ const GardenForm = ({ garden, onClose }) => {
 
         <div className="form-section">
           <h3>Garden Photos</h3>
-          <div {...getRootProps()} className="dropzone">
-            <input {...getInputProps()} />
-            <p>Drag & drop garden photos here, or click to select files</p>
+          <div className="file-upload">
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="file-input"
+            />
+            <p>Select garden photos to upload</p>
           </div>
         </div>
 
